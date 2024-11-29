@@ -32,12 +32,14 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       _isSearching = false;
       _searchController.clear();
-      Provider.of<CharacterProvider>(context, listen: false).fetchAllCharacters();
+      Provider.of<CharacterProvider>(context, listen: false).resetCharacters(); // Reset character list
+      _fetchFuture = Provider.of<CharacterProvider>(context, listen: false).fetchAllCharacters();
     });
   }
 
   void _performSearch(String query) {
     if (query.isNotEmpty) {
+      Provider.of<CharacterProvider>(context, listen: false).clearCharacters(); // Clear current list
       Provider.of<CharacterProvider>(context, listen: false).fetchAllCharactersByName(query);
     }
   }
@@ -48,18 +50,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
     // Tabs content
     final List<Widget> pages = [
-      FutureBuilder(
-        future: _fetchFuture,
-        builder: (ctx, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Failed to load characters: ${snapshot.error}'));
-          } else {
-            return CharacterGrid(characterProvider.allCharacters);
-          }
-        },
-      ),
+      if (characterProvider.isLoading)
+        const Center(child: CircularProgressIndicator()) // Show loading indicator
+      else if (characterProvider.allCharacters.isEmpty)
+        const Center(child: Text('No characters found.')) // Show empty message
+      else
+        CharacterGrid(characterProvider.allCharacters),
       characterProvider.favorites.isEmpty
           ? const Center(child: Text('No favorite characters yet.'))
           : CharacterGrid(characterProvider.favorites),
@@ -71,7 +67,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ? TextField(
           controller: _searchController,
           autofocus: true,
-          decoration: InputDecoration(
+          decoration: const InputDecoration(
             hintText: 'Search by name...',
             border: InputBorder.none,
           ),
@@ -81,13 +77,13 @@ class _HomeScreenState extends State<HomeScreen> {
         actions: _isSearching
             ? [
           IconButton(
-            icon: Icon(Icons.close),
+            icon: const Icon(Icons.close),
             onPressed: _cancelSearch,
           ),
         ]
             : [
           IconButton(
-            icon: Icon(Icons.search),
+            icon: const Icon(Icons.search),
             onPressed: _startSearch,
           ),
         ],

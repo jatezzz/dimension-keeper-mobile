@@ -73,20 +73,41 @@ class CharacterProvider with ChangeNotifier {
     }
   }
 
+  // Clear characters when a new request starts
+  void clearCharacters() {
+    _allCharacters.clear();
+    _isLoading = true;
+    _currentPage = 1;
+    notifyListeners();
+  }
+
+  // Reset characters to their original state
+  void resetCharacters() {
+    _allCharacters.clear();
+    _isLoading = false;
+    _currentPage = 1;
+    notifyListeners();
+  }
+
   Future<void> fetchAllCharactersByName(String name) async {
     try {
+      clearCharacters(); // Clear the list before making the request
+
       final response = await http.get(Uri.parse("$_baseUrl/all?name=$name"));
       final data = json.decode(response.body);
 
       if (data['results'] != null) {
-        _allCharacters.clear();
         _allCharacters.addAll((data['results'] as List)
             .map((item) => Character.fromJson(item))
             .toList());
-        notifyListeners();
       }
+
+      _isLoading = false; // Set loading to false after fetching data
+      notifyListeners();
     } catch (error) {
       print("Error searching characters by name: $error");
+      _isLoading = false; // Ensure loading is reset on error
+      notifyListeners();
       throw error;
     }
   }
