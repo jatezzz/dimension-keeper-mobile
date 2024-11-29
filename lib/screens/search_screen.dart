@@ -21,13 +21,13 @@ class _SearchScreenState extends State<SearchScreen> {
           controller: _controller,
           decoration: InputDecoration(hintText: 'Search...'),
           onSubmitted: (value) {
-            characterProvider.fetchCharacters(query: "?name=$value");
+            characterProvider.fetchMyCharacters();
           },
         ),
       ),
       body: Consumer<CharacterProvider>(
         builder: (ctx, provider, _) {
-          return CharacterGrid(provider.characters);
+          return CharacterGrid(provider.allCharacters);
         },
       ),
     );

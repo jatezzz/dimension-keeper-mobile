@@ -12,7 +12,7 @@ class CharacterCard extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         Navigator.of(context).push(
-          MaterialPageRoute(builder: (ctx) => CharacterDetailScreen(character)),
+          MaterialPageRoute(builder: (ctx) => CharacterDetailScreen(character: character)),
         );
       },
       child: GridTile(

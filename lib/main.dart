@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import 'providers/character_provider.dart';
 import 'screens/home_screen.dart';
+import 'theme.dart';
 
 void main() {
   runApp(const MyApp());
@@ -22,9 +23,9 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp(
         title: 'Rick and Morty',
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-        ),
+        theme: AppTheme.lightTheme,
+        darkTheme: AppTheme.darkTheme,
+        themeMode: ThemeMode.system,
         home: HomeScreen(),
       ),
     );
