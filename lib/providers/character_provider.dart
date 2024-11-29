@@ -1,74 +1,38 @@
-import 'dart:convert';
-
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:http/http.dart' as http;
 
 import '../models/character.dart';
+import '../repositories/character_repository.dart';
+import 'error_handler.dart';
 
 class CharacterProvider with ChangeNotifier {
-  final String _baseUrl = dotenv.env['BASE_URL']!;
+  final CharacterRepository repository;
+
+  CharacterProvider(this.repository);
 
   final List<Character> _allCharacters = [];
-  List<Character> _myCharacters = [];
+  final List<Character> _myCharacters = [];
   final List<Character> _favorites = [];
 
-  List<Character> get myCharacters => [..._myCharacters];
-
-  List<Character> get favorites => [..._favorites];
-
-  int _currentPage = 1; // Track the current page
-  bool _isLoading = false; // Prevent multiple simultaneous fetches
-  bool _hasMore = true; // Track if more data is available
+  int _currentPage = 1;
+  bool _isLoading = false;
+  bool _hasMore = true;
 
   List<Character> get allCharacters => [..._allCharacters];
-
+  List<Character> get myCharacters => [..._myCharacters];
+  List<Character> get favorites => [..._favorites];
   bool get isLoading => _isLoading;
-
-  // Utility method to log HTTP requests and responses
-  Future<http.Response> _logHttpRequest(
-      Future<http.Response> Function() request) async {
-    try {
-      final response = await request();
-      print("HTTP Request: ${response.request}");
-      print("HTTP Response: ${response.statusCode} - ${response.body}");
-      return response;
-    } catch (e) {
-      print("HTTP Error: $e");
-      rethrow;
-    }
-  }
 
   Future<void> fetchAllCharacters({bool isNextPage = false}) async {
     if (_isLoading || !_hasMore) return;
-
     try {
       _isLoading = true;
       notifyListeners();
 
-      final response = await _logHttpRequest(
-        () => http.get(Uri.parse("$_baseUrl/all?page=$_currentPage")),
-      );
-
-      final data = json.decode(response.body);
-      if (data['results'] != null) {
-        final newCharacters = (data['results'] as List)
-            .map((item) => Character.fromJson(item))
-            .toList();
-        _allCharacters.addAll(newCharacters);
-
-        // Check if there are more pages to fetch
-        _hasMore = data['info']['next'] != null;
-
-        if (_hasMore) {
-          _currentPage++;
-        }
-
-        notifyListeners();
-      }
+      final newCharacters = await repository.fetchAllCharacters(_currentPage);
+      _allCharacters.addAll(newCharacters);
+      _hasMore = newCharacters.isNotEmpty;
+      if (_hasMore) _currentPage++;
     } catch (error) {
-      print("Error fetching characters: $error");
       throw error;
     } finally {
       _isLoading = false;
@@ -94,39 +58,29 @@ class CharacterProvider with ChangeNotifier {
 
   Future<void> fetchAllCharactersByName(String name) async {
     try {
-      clearCharacters(); // Clear the list before making the request
-
-      final response = await http.get(Uri.parse("$_baseUrl/all?name=$name"));
-      final data = json.decode(response.body);
-
-      if (data['results'] != null) {
-        _allCharacters.addAll((data['results'] as List)
-            .map((item) => Character.fromJson(item))
-            .toList());
-      }
-
-      _isLoading = false; // Set loading to false after fetching data
+      _allCharacters.clear();
       notifyListeners();
+
+      final characters = await repository.fetchAllCharactersByName(name);
+      _allCharacters.addAll(characters);
     } catch (error) {
-      print("Error searching characters by name: $error");
-      _isLoading = false; // Ensure loading is reset on error
-      notifyListeners();
       throw error;
+    } finally {
+      notifyListeners();
     }
   }
 
   Future<void> fetchMyCharacters() async {
     try {
-      final response = await _logHttpRequest(
-        () => http.get(Uri.parse("$_baseUrl/me")),
-      );
-      final data = json.decode(response.body);
-      _myCharacters =
-          (data as List).map((item) => Character.fromJson(item)).toList();
+      _myCharacters.clear();
       notifyListeners();
+
+      final characters = await repository.fetchMyCharacters();
+      _myCharacters.addAll(characters);
     } catch (error) {
-      print("Error fetching my characters: $error");
       throw error;
+    } finally {
+      notifyListeners();
     }
   }
 
@@ -139,81 +93,36 @@ class CharacterProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> createCharacter(Character character) async {
+  Future<void> createCharacter(Character character, BuildContext context) async {
     try {
-      final response = await _logHttpRequest(
-        () => http.post(
-          Uri.parse("$_baseUrl"),
-          headers: {'Content-Type': 'application/json'},
-          body: json.encode({
-            'name': character.name,
-            'status': character.status,
-            'species': character.species,
-            'gender': character.gender,
-            'type': character.type,
-          }),
-        ),
-      );
-
-      if (response.statusCode == 201) {
-        _myCharacters.add(character);
-        notifyListeners();
-      } else {
-        throw Exception('Failed to create character');
-      }
+      await repository.createCharacter(character);
+      _myCharacters.add(character);
+      notifyListeners();
     } catch (error) {
-      print("Error creating character: $error");
-      throw error;
+      ErrorHandler.handleError(context, error);
     }
   }
 
-  Future<void> updateCharacter(Character character) async {
+  Future<void> updateCharacter(Character character, BuildContext context) async {
     try {
-      final response = await _logHttpRequest(
-        () => http.put(
-          Uri.parse("$_baseUrl/${character.id}"),
-          headers: {'Content-Type': 'application/json'},
-          body: json.encode({
-            'name': character.name,
-            'status': character.status,
-            'species': character.species,
-            'gender': character.gender,
-            'type': character.type,
-          }),
-        ),
-      );
-
-      if (response.statusCode == 200) {
-        final index =
-            _myCharacters.indexWhere((item) => item.id == character.id);
-        if (index != -1) {
-          _myCharacters[index] = character;
-          notifyListeners();
-        }
-      } else {
-        throw Exception('Failed to update character');
+      await repository.updateCharacter(character);
+      final index = _myCharacters.indexWhere((item) => item.id == character.id);
+      if (index != -1) {
+        _myCharacters[index] = character;
+        notifyListeners();
       }
     } catch (error) {
-      print("Error updating character: $error");
-      throw error;
+      ErrorHandler.handleError(context, error);
     }
   }
 
-  Future<void> deleteCharacter(String characterId) async {
+  Future<void> deleteCharacter(String characterId, BuildContext context) async {
     try {
-      final response = await _logHttpRequest(
-        () => http.delete(Uri.parse("$_baseUrl/$characterId")),
-      );
-
-      if (response.statusCode == 200) {
-        _myCharacters.removeWhere((item) => item.id == characterId);
-        notifyListeners();
-      } else {
-        throw Exception('Failed to delete character');
-      }
+      await repository.deleteCharacter(characterId);
+      _myCharacters.removeWhere((item) => item.id == characterId);
+      notifyListeners();
     } catch (error) {
-      print("Error deleting character: $error");
-      throw error;
+      ErrorHandler.handleError(context, error);
     }
   }
 }

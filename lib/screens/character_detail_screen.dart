@@ -11,7 +11,7 @@ class CharacterDetailScreen extends StatelessWidget {
 
   void _saveCharacter(BuildContext context) async {
     try {
-      await Provider.of<CharacterProvider>(context, listen: false).createCharacter(character);
+      await Provider.of<CharacterProvider>(context, listen: false).createCharacter(character, context);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Character saved successfully!')),
       );
@@ -73,7 +73,7 @@ class CharacterDetailScreen extends StatelessWidget {
                 );
 
                 Provider.of<CharacterProvider>(context, listen: false)
-                    .updateCharacter(updatedCharacter);
+                    .updateCharacter(updatedCharacter, context);
                 Navigator.of(ctx).pop();
               },
               child: const Text('Save'),
@@ -99,7 +99,7 @@ class CharacterDetailScreen extends StatelessWidget {
             ElevatedButton(
               onPressed: () {
                 Provider.of<CharacterProvider>(context, listen: false)
-                    .deleteCharacter(characterId);
+                    .deleteCharacter(characterId, context);
                 Navigator.of(ctx).pop();
                 Navigator.of(context).pop(); // Go back to the previous screen
               },

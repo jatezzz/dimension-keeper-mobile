@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
+import 'package:rick_and_morty_app/repositories/character_repository.dart';
 
 import 'providers/character_provider.dart';
 import 'screens/home_screen.dart';
@@ -20,7 +21,7 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
-          create: (context) => CharacterProvider(),
+          create: (context) => CharacterProvider(CharacterRepository()),
         ),
       ],
       child: MaterialApp(
