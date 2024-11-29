@@ -1,44 +1,102 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:convert';
 
 import '../models/character.dart';
 
 class CharacterProvider with ChangeNotifier {
-  final String _baseUrl = "https://d51lfraz59.execute-api.us-west-2.amazonaws.com/characters";
+  final String _baseUrl = dotenv.env['BASE_URL']!;
 
-  List<Character> _allCharacters = [];
+  final List<Character> _allCharacters = [];
   List<Character> _myCharacters = [];
-  List<Character> _favorites = [];
+  final List<Character> _favorites = [];
 
-  // Getters
-  List<Character> get allCharacters => [..._allCharacters];
   List<Character> get myCharacters => [..._myCharacters];
   List<Character> get favorites => [..._favorites];
 
-  // Fetch all characters from the API
-  Future<void> fetchAllCharacters() async {
+  int _currentPage = 1; // Track the current page
+  bool _isLoading = false; // Prevent multiple simultaneous fetches
+  bool _hasMore = true; // Track if more data is available
+
+  List<Character> get allCharacters => [..._allCharacters];
+  bool get isLoading => _isLoading;
+
+  // Utility method to log HTTP requests and responses
+  Future<http.Response> _logHttpRequest(Future<http.Response> Function() request) async {
     try {
-      final response = await http.get(Uri.parse("$_baseUrl/all"));
+      final response = await request();
+      print("HTTP Request: ${response.request}");
+      print("HTTP Response: ${response.statusCode} - ${response.body}");
+      return response;
+    } catch (e) {
+      print("HTTP Error: $e");
+      rethrow;
+    }
+  }
+
+  Future<void> fetchAllCharacters({bool isNextPage = false}) async {
+    if (_isLoading || !_hasMore) return;
+
+    try {
+      _isLoading = true;
+      notifyListeners();
+
+      final response = await _logHttpRequest(
+            () => http.get(Uri.parse("$_baseUrl/all?page=$_currentPage")),
+      );
+
       final data = json.decode(response.body);
 
       if (data['results'] != null) {
-        _allCharacters = (data['results'] as List)
+        final newCharacters = (data['results'] as List)
             .map((item) => Character.fromJson(item))
             .toList();
+        _allCharacters.addAll(newCharacters);
+
+        // Check if there are more pages to fetch
+        _hasMore = data['info']['next'] != null;
+
+        if (_hasMore) {
+          _currentPage++;
+        }
+
         notifyListeners();
       }
     } catch (error) {
-      print("Error fetching all characters: $error");
+      print("Error fetching characters: $error");
+      throw error;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> fetchAllCharactersByName(String name) async {
+    try {
+      final response = await http.get(Uri.parse("$_baseUrl/all?name=$name"));
+      final data = json.decode(response.body);
+
+      if (data['results'] != null) {
+        _allCharacters.clear();
+        _allCharacters.addAll((data['results'] as List)
+            .map((item) => Character.fromJson(item))
+            .toList());
+        notifyListeners();
+      }
+    } catch (error) {
+      print("Error searching characters by name: $error");
       throw error;
     }
   }
 
-  // Fetch user-specific characters
   Future<void> fetchMyCharacters() async {
     try {
-      final response = await http.get(Uri.parse("$_baseUrl/me"));
+      final response = await _logHttpRequest(
+            () => http.get(Uri.parse("$_baseUrl/me")),
+      );
+
       final data = json.decode(response.body);
 
       if (data['results'] != null) {
@@ -53,7 +111,6 @@ class CharacterProvider with ChangeNotifier {
     }
   }
 
-  // Toggle favorites
   void toggleFavorite(Character character) {
     if (_favorites.contains(character)) {
       _favorites.remove(character);
@@ -63,19 +120,20 @@ class CharacterProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // Create a new character
   Future<void> createCharacter(Character character) async {
     try {
-      final response = await http.post(
-        Uri.parse("$_baseUrl"),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'name': character.name,
-          'status': character.status,
-          'species': character.species,
-          'gender': character.gender,
-          'type': character.type,
-        }),
+      final response = await _logHttpRequest(
+            () => http.post(
+          Uri.parse("$_baseUrl"),
+          headers: {'Content-Type': 'application/json'},
+          body: json.encode({
+            'name': character.name,
+            'status': character.status,
+            'species': character.species,
+            'gender': character.gender,
+            'type': character.type,
+          }),
+        ),
       );
 
       if (response.statusCode == 201) {
@@ -90,19 +148,20 @@ class CharacterProvider with ChangeNotifier {
     }
   }
 
-  // Update an existing character
   Future<void> updateCharacter(Character character) async {
     try {
-      final response = await http.put(
-        Uri.parse("$_baseUrl/${character.id}"),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'name': character.name,
-          'status': character.status,
-          'species': character.species,
-          'gender': character.gender,
-          'type': character.type,
-        }),
+      final response = await _logHttpRequest(
+            () => http.put(
+          Uri.parse("$_baseUrl/${character.id}"),
+          headers: {'Content-Type': 'application/json'},
+          body: json.encode({
+            'name': character.name,
+            'status': character.status,
+            'species': character.species,
+            'gender': character.gender,
+            'type': character.type,
+          }),
+        ),
       );
 
       if (response.statusCode == 200) {
@@ -120,10 +179,11 @@ class CharacterProvider with ChangeNotifier {
     }
   }
 
-  // Delete a character
   Future<void> deleteCharacter(int characterId) async {
     try {
-      final response = await http.delete(Uri.parse("$_baseUrl/$characterId"));
+      final response = await _logHttpRequest(
+            () => http.delete(Uri.parse("$_baseUrl/$characterId")),
+      );
 
       if (response.statusCode == 200) {
         _myCharacters.removeWhere((item) => item.id == characterId);

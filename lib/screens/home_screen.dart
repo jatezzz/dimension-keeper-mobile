@@ -13,6 +13,8 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   late Future<void> _fetchFuture;
   int _currentIndex = 0;
+  bool _isSearching = false; // Track if search mode is active
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -20,12 +22,32 @@ class _HomeScreenState extends State<HomeScreen> {
     _fetchFuture = Provider.of<CharacterProvider>(context, listen: false).fetchAllCharacters();
   }
 
+  void _startSearch() {
+    setState(() {
+      _isSearching = true;
+    });
+  }
+
+  void _cancelSearch() {
+    setState(() {
+      _isSearching = false;
+      _searchController.clear();
+      Provider.of<CharacterProvider>(context, listen: false).fetchAllCharacters();
+    });
+  }
+
+  void _performSearch(String query) {
+    if (query.isNotEmpty) {
+      Provider.of<CharacterProvider>(context, listen: false).fetchAllCharactersByName(query);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final characterProvider = Provider.of<CharacterProvider>(context);
 
     // Tabs content
-    final List<Widget> _pages = [
+    final List<Widget> pages = [
       FutureBuilder(
         future: _fetchFuture,
         builder: (ctx, snapshot) {
@@ -45,9 +67,32 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(_currentIndex == 0 ? 'Explore Characters' : 'Saved Characters'),
+        title: _isSearching
+            ? TextField(
+          controller: _searchController,
+          autofocus: true,
+          decoration: InputDecoration(
+            hintText: 'Search by name...',
+            border: InputBorder.none,
+          ),
+          onSubmitted: _performSearch,
+        )
+            : Text(_currentIndex == 0 ? 'Explore Characters' : 'Saved Characters'),
+        actions: _isSearching
+            ? [
+          IconButton(
+            icon: Icon(Icons.close),
+            onPressed: _cancelSearch,
+          ),
+        ]
+            : [
+          IconButton(
+            icon: Icon(Icons.search),
+            onPressed: _startSearch,
+          ),
+        ],
       ),
-      body: _pages[_currentIndex],
+      body: pages[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) {

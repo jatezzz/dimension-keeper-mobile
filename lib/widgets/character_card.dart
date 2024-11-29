@@ -15,11 +15,26 @@ class CharacterCard extends StatelessWidget {
           MaterialPageRoute(builder: (ctx) => CharacterDetailScreen(character: character)),
         );
       },
-      child: GridTile(
-        child: Image.network(character.image, fit: BoxFit.cover),
-        footer: GridTileBar(
-          backgroundColor: Colors.black54,
-          title: Text(character.name, textAlign: TextAlign.center),
+      child: Card(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Image.network(
+                character.image,
+                fit: BoxFit.cover,
+                width: double.infinity,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                character.name,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ),
+          ],
         ),
       ),
     );
