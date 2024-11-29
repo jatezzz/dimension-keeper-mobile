@@ -9,12 +9,12 @@ class CharacterRepository {
 
   Future<List<Character>> fetchAllCharacters(int page) async {
     final response = await http.get(Uri.parse("$_baseUrl/all?page=$page"));
-    return _parseCharacterList(response);
+    return _parseCharacterList(response, isExternal: true);
   }
 
   Future<List<Character>> fetchAllCharactersByName(String name) async {
     final response = await http.get(Uri.parse("$_baseUrl/all?name=$name"));
-    return _parseCharacterList(response);
+    return _parseCharacterList(response, isExternal: true);
   }
 
   Future<List<Character>> fetchMyCharacters() async {
@@ -27,6 +27,8 @@ class CharacterRepository {
       Uri.parse("$_baseUrl"),
       headers: {'Content-Type': 'application/json'},
       body: json.encode({
+        'id': character.id,
+        'image': character.image,
         'name': character.name,
         'status': character.status,
         'species': character.species,
@@ -58,10 +60,16 @@ class CharacterRepository {
   }
 
   // Parse the character list from response
-  List<Character> _parseCharacterList(http.Response response) {
+  List<Character> _parseCharacterList(http.Response response,
+      {bool isExternal = false}) {
     _checkResponse(response, 200, "Failed to fetch characters");
     final data = json.decode(response.body);
-    return (data['results'] as List)
+    if(isExternal){
+      return (data['results'] as List)
+          .map((item) => Character.fromJson(item))
+          .toList();
+    }
+    return (data as List)
         .map((item) => Character.fromJson(item))
         .toList();
   }

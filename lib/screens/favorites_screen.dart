@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/character_provider.dart';
-import '../widgets/character_grid.dart';
 
 class FavoritesScreen extends StatefulWidget {
   const FavoritesScreen({super.key});
@@ -11,47 +10,83 @@ class FavoritesScreen extends StatefulWidget {
 }
 
 class _FavoritesScreenState extends State<FavoritesScreen> {
-  late Future<void> _fetchFavoritesFuture;
+  late ScrollController _scrollController;
+  bool _isLoading = true;
+  String? _errorMessage;
 
   @override
   void initState() {
     super.initState();
-    _fetchFavoritesFuture =
-        Provider.of<CharacterProvider>(context, listen: false).fetchMyCharacters();
+    _scrollController = ScrollController();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadFavorites();
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadFavorites() async {
+    try {
+      await Provider.of<CharacterProvider>(context, listen: false).fetchMyCharacters();
+      setState(() {
+        _isLoading = false;
+        _errorMessage = null;
+      });
+    } catch (error) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = error.toString();
+      });
+    }
   }
 
   Future<void> _refreshFavorites() async {
-    await Provider.of<CharacterProvider>(context, listen: false).fetchMyCharacters();
+    try {
+      await Provider.of<CharacterProvider>(context, listen: false).fetchMyCharacters();
+    } catch (error) {
+      setState(() {
+        _errorMessage = error.toString();
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final characterProvider = Provider.of<CharacterProvider>(context);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('My Favorites'),
-      ),
-      body: FutureBuilder(
-        future: _fetchFavoritesFuture,
-        builder: (ctx, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Failed to load favorites: ${snapshot.error}'));
-          } else if (characterProvider.myCharacters.isEmpty) {
-            return const Center(child: Text('No favorites added yet.'));
-          } else {
-            return RefreshIndicator(
-              onRefresh: _refreshFavorites,
-              child: Scrollbar(
-                thumbVisibility: true, // Show scroll bar for better UX
-                child: CharacterGrid(characterProvider.myCharacters),
-              ),
-            );
-          }
-        },
-      ),
+    return RefreshIndicator(
+        onRefresh: _refreshFavorites,
+        child: _isLoading
+            ? const Center(
+          child: CircularProgressIndicator(), // Loading indicator
+        )
+            : _errorMessage != null
+            ? Center(
+          child: Text('Failed to load favorites: $_errorMessage'), // Error state
+        )
+            : characterProvider.myCharacters.isEmpty
+            ? const Center(
+          child: Text('No favorites added yet.'), // Empty state
+        )
+            : Scrollbar(
+          thumbVisibility: true,
+          controller: _scrollController,
+          child: ListView.builder(
+            controller: _scrollController,
+            itemCount: characterProvider.myCharacters.length,
+            itemBuilder: (context, index) {
+              final character = characterProvider.myCharacters[index];
+              return ListTile(
+                title: Text(character.name),
+                subtitle: Text(character.species),
+              );
+            },
+          ),
+        ),
     );
   }
 }

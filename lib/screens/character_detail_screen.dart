@@ -126,13 +126,13 @@ class CharacterDetailScreen extends StatelessWidget {
         actions: [
           IconButton(
             icon: Icon(
-              characterProvider.favorites.contains(character)
+              characterProvider.myCharacters.contains(character)
                   ? Icons.favorite
                   : Icons.favorite_border,
               color: Colors.red,
             ),
             onPressed: () {
-              characterProvider.toggleFavorite(character);
+              _saveCharacter(context);
             },
           ),
           IconButton(
@@ -203,13 +203,6 @@ class CharacterDetailScreen extends StatelessWidget {
                   DetailItem(label: 'Gender', value: character.gender),
                   if (character.type.isNotEmpty)
                     DetailItem(label: 'Type', value: character.type),
-                  const SizedBox(height: 16),
-                  Center(
-                    child: ElevatedButton(
-                      onPressed: () => _saveCharacter(context),
-                      child: const Text('Save Character'),
-                    ),
-                  ),
                 ],
               ),
             ),

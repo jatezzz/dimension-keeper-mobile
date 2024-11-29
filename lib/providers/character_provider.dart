@@ -11,7 +11,6 @@ class CharacterProvider with ChangeNotifier {
 
   final List<Character> _allCharacters = [];
   final List<Character> _myCharacters = [];
-  final List<Character> _favorites = [];
 
   int _currentPage = 1;
   bool _isLoading = false;
@@ -19,7 +18,6 @@ class CharacterProvider with ChangeNotifier {
 
   List<Character> get allCharacters => [..._allCharacters];
   List<Character> get myCharacters => [..._myCharacters];
-  List<Character> get favorites => [..._favorites];
   bool get isLoading => _isLoading;
 
   Future<void> fetchAllCharacters({bool isNextPage = false}) async {
@@ -57,6 +55,7 @@ class CharacterProvider with ChangeNotifier {
   }
 
   Future<void> fetchAllCharactersByName(String name) async {
+    _isLoading = true;
     try {
       _allCharacters.clear();
       notifyListeners();
@@ -66,6 +65,7 @@ class CharacterProvider with ChangeNotifier {
     } catch (error) {
       throw error;
     } finally {
+      _isLoading = false;
       notifyListeners();
     }
   }
@@ -82,15 +82,6 @@ class CharacterProvider with ChangeNotifier {
     } finally {
       notifyListeners();
     }
-  }
-
-  void toggleFavorite(Character character) {
-    if (_favorites.contains(character)) {
-      _favorites.remove(character);
-    } else {
-      _favorites.add(character);
-    }
-    notifyListeners();
   }
 
   Future<void> createCharacter(Character character, BuildContext context) async {

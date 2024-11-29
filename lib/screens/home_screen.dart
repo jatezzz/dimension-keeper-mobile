@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../providers/character_provider.dart';
 import '../widgets/character_grid.dart';
 import 'favorites_screen.dart'; // Import the FavoritesScreen
@@ -20,7 +21,8 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _fetchFuture = Provider.of<CharacterProvider>(context, listen: false).fetchAllCharacters();
+    _fetchFuture = Provider.of<CharacterProvider>(context, listen: false)
+        .fetchAllCharacters();
   }
 
   void _startSearch() {
@@ -33,15 +35,19 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       _isSearching = false;
       _searchController.clear();
-      Provider.of<CharacterProvider>(context, listen: false).resetCharacters(); // Reset character list
-      _fetchFuture = Provider.of<CharacterProvider>(context, listen: false).fetchAllCharacters();
+      Provider.of<CharacterProvider>(context, listen: false)
+          .resetCharacters(); // Reset character list
+      _fetchFuture = Provider.of<CharacterProvider>(context, listen: false)
+          .fetchAllCharacters();
     });
   }
 
   void _performSearch(String query) {
     if (query.isNotEmpty) {
-      Provider.of<CharacterProvider>(context, listen: false).clearCharacters(); // Clear current list
-      Provider.of<CharacterProvider>(context, listen: false).fetchAllCharactersByName(query);
+      Provider.of<CharacterProvider>(context, listen: false)
+          .clearCharacters(); // Clear current list
+      Provider.of<CharacterProvider>(context, listen: false)
+          .fetchAllCharactersByName(query);
     }
   }
 
@@ -52,11 +58,20 @@ class _HomeScreenState extends State<HomeScreen> {
     // Tabs content
     final List<Widget> pages = [
       if (characterProvider.isLoading)
-        const Center(child: CircularProgressIndicator()) // Show loading indicator
+        const Center(
+            child: CircularProgressIndicator()) // Show loading indicator
       else if (characterProvider.allCharacters.isEmpty)
         const Center(child: Text('No characters found.')) // Show empty message
       else
-        CharacterGrid(characterProvider.allCharacters),
+        RefreshIndicator(
+          onRefresh: () =>
+              Provider.of<CharacterProvider>(context, listen: false)
+                  .fetchAllCharacters(),
+          child: Scrollbar(
+            thumbVisibility: true,
+            child: CharacterGrid(characterProvider.allCharacters),
+          ),
+        ),
       const FavoritesScreen(), // Navigate to FavoritesScreen
     ];
 
@@ -64,28 +79,29 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: _isSearching
             ? TextField(
-          controller: _searchController,
-          autofocus: true,
-          decoration: const InputDecoration(
-            hintText: 'Search by name...',
-            border: InputBorder.none,
-          ),
-          onSubmitted: _performSearch,
-        )
-            : Text(_currentIndex == 0 ? 'Explore Characters' : 'Saved Characters'),
+                controller: _searchController,
+                autofocus: true,
+                decoration: const InputDecoration(
+                  hintText: 'Search by name...',
+                  border: InputBorder.none,
+                ),
+                onSubmitted: _performSearch,
+              )
+            : Text(
+                _currentIndex == 0 ? 'Explore Characters' : 'Saved Characters'),
         actions: _isSearching
             ? [
-          IconButton(
-            icon: const Icon(Icons.close),
-            onPressed: _cancelSearch,
-          ),
-        ]
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: _cancelSearch,
+                ),
+              ]
             : [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: _startSearch,
-          ),
-        ],
+                IconButton(
+                  icon: const Icon(Icons.search),
+                  onPressed: _startSearch,
+                ),
+              ],
       ),
       body: pages[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
