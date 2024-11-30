@@ -39,12 +39,14 @@ class CharacterCard extends StatelessWidget {
                 ClipRRect(
                   borderRadius: const BorderRadius.vertical(
                     top: Radius.circular(16.0),
-                  ), // Rounds only the top corners
-                  child: Image.network(
-                    character.image,
-                    fit: BoxFit.cover,
-                    width: double.infinity,
-                    height: 150,
+                  ),
+                  child: AspectRatio(
+                    aspectRatio: 1.23,
+                    child: Image.network(
+                      character.image,
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                    ),
                   ),
                 ),
                 Padding(
