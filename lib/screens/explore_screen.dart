@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../providers/character_provider.dart';
 import '../widgets/character_grid.dart';
+import '../widgets/custom_search_bar.dart';
 
 class ExploreScreen extends StatefulWidget {
   const ExploreScreen({super.key});
@@ -24,7 +25,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
     _scrollController = ScrollController();
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >=
-          _scrollController.position.maxScrollExtent &&
+              _scrollController.position.maxScrollExtent &&
           !Provider.of<CharacterProvider>(context, listen: false).isLoading) {
         Provider.of<CharacterProvider>(context, listen: false)
             .fetchAllCharacters(isNextPage: true);
@@ -37,8 +38,10 @@ class _ExploreScreenState extends State<ExploreScreen> {
 
   Future<void> _loadAllCharacters() async {
     try {
-      await Provider.of<CharacterProvider>(context, listen: false)
-          .fetchAllCharacters();
+      final provider = Provider.of<CharacterProvider>(context, listen: false);
+      provider.isInitialized
+          ? provider.fetchAllCharacters()
+          : provider.initialize().then((_) => provider.fetchAllCharacters());
       setState(() {
         _isLoading = false;
         _errorMessage = null;
@@ -109,35 +112,18 @@ class _ExploreScreenState extends State<ExploreScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: _isSearching
-            ? TextField(
-          controller: _searchController,
-          autofocus: true,
-          decoration: const InputDecoration(
-            hintText: 'Search by name...',
-            border: InputBorder.none,
-          ),
-          onSubmitted: _performSearch,
-        )
-            : const Text('Explore Characters'),
-        actions: _isSearching
-            ? [
-          IconButton(
-            icon: const Icon(Icons.close),
-            onPressed: _cancelSearch,
-          ),
-        ]
-            : [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () {
-              setState(() {
-                _isSearching = true;
-              });
-            },
-          ),
-        ],
+      appBar: CustomSearchBar(
+        isSearching: _isSearching,
+        searchController: _searchController,
+        hintText: 'Search by name...',
+        title: 'Dimension Keeper',
+        onSearch: _performSearch,
+        onCancel: _cancelSearch,
+        onStartSearch: () {
+          setState(() {
+            _isSearching = true;
+          });
+        },
       ),
       body: content,
     );

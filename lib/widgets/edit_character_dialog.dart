@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rick_and_morty_app/widgets/wrap_with_padding.dart';
 
 import '../models/character.dart';
 import '../models/status_extension.dart';
@@ -37,6 +38,46 @@ class _EditCharacterDialogState extends State<EditCharacterDialog> {
     super.dispose();
   }
 
+  Future<void> _handleSave(BuildContext context) async {
+    try {
+      // Show loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) => const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+
+      final updatedCharacter = Character(
+        id: widget.character.id,
+        name: nameController.text,
+        status: selectedStatus,
+        species: speciesController.text,
+        gender: genderController.text,
+        type: widget.character.type,
+        image: widget.character.image,
+      );
+
+      // Update character
+      await Provider.of<CharacterProvider>(context, listen: false)
+          .updateCharacter(updatedCharacter, context);
+
+      // Refresh character list
+      await Provider.of<CharacterProvider>(context, listen: false)
+          .fetchMyCharacters();
+
+      // Close loading indicator and dialog
+      Navigator.of(context).pop(); // Close loading indicator
+      Navigator.of(context).pop(updatedCharacter); // Return updated character
+    } catch (error) {
+      Navigator.of(context).pop(); // Close loading indicator
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to update character: $error')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
@@ -44,59 +85,53 @@ class _EditCharacterDialogState extends State<EditCharacterDialog> {
       content: SingleChildScrollView(
         child: Column(
           children: [
-            TextField(
-              controller: nameController,
-              decoration: const InputDecoration(labelText: 'Name'),
+            wrapWithPadding(
+              child: TextField(
+                controller: nameController,
+                decoration: const InputDecoration(labelText: 'Name'),
+              ),
             ),
-            DropdownButtonFormField<Status>(
-              value: selectedStatus,
-              onChanged: (newValue) {
-                if (newValue != null) {
-                  setState(() {
-                    selectedStatus = newValue;
-                  });
-                }
-              },
-              decoration: const InputDecoration(labelText: 'Status'),
-              items: Status.values.map((status) {
-                return DropdownMenuItem<Status>(
-                  value: status,
-                  child: Text(status.toReadableString()),
-                );
-              }).toList(),
+            wrapWithPadding(
+              child: DropdownButtonFormField<Status>(
+                value: selectedStatus,
+                onChanged: (newValue) {
+                  if (newValue != null) {
+                    setState(() {
+                      selectedStatus = newValue;
+                    });
+                  }
+                },
+                decoration: const InputDecoration(labelText: 'Status'),
+                items: Status.values.map((status) {
+                  return DropdownMenuItem<Status>(
+                    value: status,
+                    child: Text(status.toReadableString()),
+                  );
+                }).toList(),
+              ),
             ),
-            TextField(
-              controller: speciesController,
-              decoration: const InputDecoration(labelText: 'Species'),
+            wrapWithPadding(
+              child: TextField(
+                controller: speciesController,
+                decoration: const InputDecoration(labelText: 'Species'),
+              ),
             ),
-            TextField(
-              controller: genderController,
-              decoration: const InputDecoration(labelText: 'Gender'),
+            wrapWithPadding(
+              child: TextField(
+                controller: genderController,
+                decoration: const InputDecoration(labelText: 'Gender'),
+              ),
             ),
           ],
         ),
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () => Navigator.of(context).pop(), // Cancel without returning anything
           child: const Text('Cancel'),
         ),
         ElevatedButton(
-          onPressed: () {
-            final updatedCharacter = Character(
-              id: widget.character.id,
-              name: nameController.text,
-              status: selectedStatus,
-              species: speciesController.text,
-              gender: genderController.text,
-              type: widget.character.type,
-              image: widget.character.image,
-            );
-
-            Provider.of<CharacterProvider>(context, listen: false)
-                .updateCharacter(updatedCharacter, context);
-            Navigator.of(context).pop();
-          },
+          onPressed: () => _handleSave(context),
           child: const Text('Save'),
         ),
       ],

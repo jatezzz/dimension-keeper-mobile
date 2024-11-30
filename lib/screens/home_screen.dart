@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'explore_screen.dart';
-import 'favorites_screen.dart';
+import 'save_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -17,7 +17,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final List<Widget> pages = [
       const ExploreScreen(), // Inject ExploreScreen
-      const FavoritesScreen(), // Inject FavoritesScreen
+      const SaveScreen(), // Inject FavoritesScreen
     ];
 
     return Scaffold(

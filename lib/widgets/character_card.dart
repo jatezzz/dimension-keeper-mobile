@@ -12,9 +12,10 @@ class CharacterCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isFavorite = Provider.of<CharacterProvider>(context, listen: false)
-        .myCharacters
-        .contains(character);
+    var myCharacters = Provider.of<CharacterProvider>(context, listen: false)
+        .myCharacters;
+    final isFavorite = myCharacters.map((it)=>it.id)
+        .contains(character.id);
 
     return GestureDetector(
       onTap: () {
@@ -26,13 +27,12 @@ class CharacterCard extends StatelessWidget {
       },
       child: Card(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16.0), // Card's border radius
+          borderRadius: BorderRadius.circular(16.0),
         ),
-        clipBehavior: Clip.antiAlias, // Ensures content respects border radius
-        elevation: 4,
+        clipBehavior: Clip.antiAlias,
+        elevation: 2,
         child: Stack(
           children: [
-            // Image with rounded corners at the top
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -41,7 +41,7 @@ class CharacterCard extends StatelessWidget {
                     top: Radius.circular(16.0),
                   ),
                   child: AspectRatio(
-                    aspectRatio: 1.23,
+                    aspectRatio: 1.25,
                     child: Image.network(
                       character.image,
                       fit: BoxFit.cover,

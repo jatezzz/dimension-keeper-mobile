@@ -11,6 +11,7 @@ Future<void> main() async {
   await dotenv.load(fileName: ".env");
   runApp(const MyApp());
 }
+final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -26,11 +27,41 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp(
         title: 'Rick and Morty',
+        navigatorObservers: [routeObserver],
         theme: AppTheme.lightTheme,
         darkTheme: AppTheme.darkTheme,
         themeMode: ThemeMode.system,
-        home: HomeScreen(),
+        home: const InitializationScreen(),
       ),
+    );
+  }
+}
+
+
+class InitializationScreen extends StatelessWidget {
+  const InitializationScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder(
+      future: Provider.of<CharacterProvider>(context, listen: false).initialize(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(
+              child: CircularProgressIndicator(),
+            ),
+          );
+        } else if (snapshot.hasError) {
+          return Scaffold(
+            body: Center(
+              child: Text('Initialization Failed: ${snapshot.error}'),
+            ),
+          );
+        } else {
+          return const HomeScreen();
+        }
+      },
     );
   }
 }

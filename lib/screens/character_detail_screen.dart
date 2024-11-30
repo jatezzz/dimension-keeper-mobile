@@ -8,88 +8,151 @@ import '../widgets/character_image_header.dart';
 import '../widgets/delete_character_dialog.dart';
 import '../widgets/edit_character_dialog.dart';
 
-class CharacterDetailScreen extends StatelessWidget {
+class CharacterDetailScreen extends StatefulWidget {
   final Character character;
 
   const CharacterDetailScreen({super.key, required this.character});
 
-  void _showSnackBar(BuildContext context, String message) {
+  @override
+  _CharacterDetailScreenState createState() => _CharacterDetailScreenState();
+}
+
+class _CharacterDetailScreenState extends State<CharacterDetailScreen> {
+  late Character character;
+  late bool isSaved;
+  bool _isLoading = false; // To track the loading state
+
+  @override
+  void initState() {
+    super.initState();
+    character = widget.character;
+    _checkIfSaved();
+  }
+
+  void _checkIfSaved() {
+    final characterProvider =
+        Provider.of<CharacterProvider>(context, listen: false);
+    isSaved = characterProvider.myCharacters
+        .map((it) => it.id)
+        .contains(character.id);
+  }
+
+  void _showSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message)),
     );
   }
 
-  void _saveCharacter(BuildContext context) async {
+  Future<void> _handleSaveCharacter() async {
+    setState(() {
+      _isLoading = true; // Show loader
+    });
     try {
       await Provider.of<CharacterProvider>(context, listen: false)
           .createCharacter(character, context);
-      _showSnackBar(context, 'Character saved successfully!');
+      _showSnackBar('Character saved successfully!');
+      await Provider.of<CharacterProvider>(context, listen: false)
+          .fetchMyCharacters();
+      setState(() {
+        _checkIfSaved(); // Update state after saving
+      });
     } catch (error) {
-      _showSnackBar(context, 'Failed to save character. Please try again.');
+      _showSnackBar('Failed to save character. Please try again.');
+    } finally {
+      setState(() {
+        _isLoading = false; // Hide loader
+      });
     }
   }
 
-  void _showEditDialog(BuildContext context) {
-    showDialog(
+  Future<void> _handleEditCharacter() async {
+    final updatedCharacter = await showDialog<Character>(
       context: context,
       builder: (ctx) => EditCharacterDialog(character: character),
     );
+    if (updatedCharacter != null) {
+      setState(() {
+        character = updatedCharacter; // Update character with new data
+        _checkIfSaved();
+      });
+    }
   }
 
-  void _showDeleteDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (ctx) => DeleteCharacterDialog(characterId: character.id),
-    );
+  Future<void> _handleDeleteCharacter() async {
+    setState(() {
+      _isLoading = true; // Show loader
+    });
+    try {
+      final result = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => DeleteCharacterDialog(characterId: character.id),
+      );
+
+      if (result == true) {
+        await Provider.of<CharacterProvider>(context, listen: false)
+            .fetchMyCharacters();
+        setState(() {
+          _checkIfSaved(); // Update state after deletion
+        });
+      }
+    } catch (error) {
+      _showSnackBar('Failed to delete character. Please try again.');
+    } finally {
+      setState(() {
+        _isLoading = false; // Hide loader
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final characterProvider =
-        Provider.of<CharacterProvider>(context, listen: false);
-
-    var isSaved = characterProvider.myCharacters.contains(character);
-    var saveButton = TextButton(
-      onPressed: () => _saveCharacter(context),
-      style: TextButton.styleFrom(
-        foregroundColor: Theme.of(context).colorScheme.primary,
-      ),
-      child: const Text("Save"),
-    );
-    var editButton = IconButton(
-      icon: const Icon(Icons.edit, color: Colors.blue),
-      onPressed: () => _showEditDialog(context),
-    );
-    var deleteButton = IconButton(
-      icon: const Icon(Icons.delete, color: Colors.red),
-      onPressed: () => _showDeleteDialog(context),
-    );
-    List<Widget> actions = [];
-    if (isSaved) {
-      actions = [
-        editButton,
-        deleteButton,
-      ];
-    } else {
-      actions = [saveButton];
-    }
-    return Scaffold(
-      appBar: AppBar(
-        title:
-            Text(character.name, style: const TextStyle(color: Colors.black)),
-        backgroundColor: Colors.white,
-        elevation: 2,
-        actions: actions,
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            CharacterImageHeader(character: character),
-            CharacterDetailsSection(character: character),
-          ],
+    return Stack(
+      children: [
+        Scaffold(
+          appBar: AppBar(
+            title: Text(character.name,
+                style: const TextStyle(color: Colors.black)),
+            backgroundColor: Colors.white,
+            elevation: 2,
+            actions: isSaved
+                ? [
+                    IconButton(
+                      icon: const Icon(Icons.edit, color: Colors.blue),
+                      onPressed: _isLoading ? null : _handleEditCharacter,
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      onPressed: _isLoading ? null : _handleDeleteCharacter,
+                    ),
+                  ]
+                : [
+                    TextButton(
+                      onPressed: _isLoading ? null : _handleSaveCharacter,
+                      style: TextButton.styleFrom(
+                        foregroundColor: Theme.of(context).colorScheme.primary,
+                      ),
+                      child: const Text("Save"),
+                    ),
+                  ],
+          ),
+          body: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CharacterImageHeader(character: character),
+                CharacterDetailsSection(character: character),
+              ],
+            ),
+          ),
         ),
-      ),
+        if (_isLoading)
+          Container(
+            color: Colors.black.withOpacity(0.5), // Semi-transparent overlay
+            child: const Center(
+              child: CircularProgressIndicator(),
+            ),
+          ),
+      ],
     );
   }
 }

@@ -7,6 +7,32 @@ class DeleteCharacterDialog extends StatelessWidget {
 
   const DeleteCharacterDialog({super.key, required this.characterId});
 
+  Future<void> _handleDelete(BuildContext context) async {
+    try {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) => const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+
+      await Provider.of<CharacterProvider>(context, listen: false)
+          .deleteCharacter(characterId, context);
+
+      await Provider.of<CharacterProvider>(context, listen: false)
+          .fetchMyCharacters();
+
+      Navigator.of(context).pop();
+      Navigator.of(context).pop(true); // Return success result
+    } catch (error) {
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to delete character: $error')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
@@ -14,16 +40,11 @@ class DeleteCharacterDialog extends StatelessWidget {
       content: const Text('Are you sure you want to delete this character?'),
       actions: [
         TextButton(
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () => Navigator.of(context).pop(false), // Return cancel result
           child: const Text('Cancel'),
         ),
         ElevatedButton(
-          onPressed: () {
-            Provider.of<CharacterProvider>(context, listen: false)
-                .deleteCharacter(characterId, context);
-            Navigator.of(context).pop();
-            Navigator.of(context).pop(); // Return to the previous screen
-          },
+          onPressed: () => _handleDelete(context),
           child: const Text('Delete'),
         ),
       ],

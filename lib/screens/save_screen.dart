@@ -2,17 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rick_and_morty_app/models/character.dart';
 
+import '../main.dart';
 import '../providers/character_provider.dart';
 import '../widgets/character_grid.dart';
+import '../widgets/custom_search_bar.dart';
 
-class FavoritesScreen extends StatefulWidget {
-  const FavoritesScreen({super.key});
+class SaveScreen extends StatefulWidget {
+  const SaveScreen({super.key});
 
   @override
-  _FavoritesScreenState createState() => _FavoritesScreenState();
+  _SaveScreenState createState() => _SaveScreenState();
 }
 
-class _FavoritesScreenState extends State<FavoritesScreen> {
+class _SaveScreenState extends State<SaveScreen> with RouteAware {
   late ScrollController _scrollController;
   final TextEditingController _searchController = TextEditingController();
   bool _isSearching = false;
@@ -25,18 +27,33 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     super.initState();
     _scrollController = ScrollController();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadFavorites();
+      _loadSavedCharacters();
     });
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final route = ModalRoute.of(context);
+    if (route is PageRoute) {
+      routeObserver.subscribe(this, route);
+    }
+  }
+  @override
   void dispose() {
+    routeObserver.unsubscribe(this);
     _scrollController.dispose();
     _searchController.dispose();
     super.dispose();
   }
 
-  Future<void> _loadFavorites() async {
+  @override
+  void didPopNext() {
+    // Called when navigating back to this screen
+    _loadSavedCharacters();
+  }
+
+  Future<void> _loadSavedCharacters() async {
     try {
       await Provider.of<CharacterProvider>(context, listen: false)
           .fetchMyCharacters();
@@ -44,8 +61,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
         _isLoading = false;
         _errorMessage = null;
         _filteredCharacters =
-            Provider.of<CharacterProvider>(context, listen: false)
-                .myCharacters;
+            Provider.of<CharacterProvider>(context, listen: false).myCharacters;
       });
     } catch (error) {
       setState(() {
@@ -55,14 +71,13 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     }
   }
 
-  Future<void> _refreshFavorites() async {
+  Future<void> _refreshSavedCharacters() async {
     try {
       await Provider.of<CharacterProvider>(context, listen: false)
           .fetchMyCharacters();
       setState(() {
         _filteredCharacters =
-            Provider.of<CharacterProvider>(context, listen: false)
-                .myCharacters;
+            Provider.of<CharacterProvider>(context, listen: false).myCharacters;
       });
     } catch (error) {
       setState(() {
@@ -91,8 +106,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     setState(() {
       _isSearching = false;
       _searchController.clear();
-      _filteredCharacters = Provider.of<CharacterProvider>(context, listen: false)
-          .myCharacters;
+      _filteredCharacters =
+          Provider.of<CharacterProvider>(context, listen: false).myCharacters;
     });
   }
 
@@ -106,15 +121,15 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
       );
     } else if (_errorMessage != null) {
       content = Center(
-        child: Text('Failed to load favorites: $_errorMessage'),
+        child: Text('Failed to load saved characters: $_errorMessage'),
       );
     } else if (_filteredCharacters.isEmpty) {
       content = const Center(
-        child: Text('No favorite characters match your search.'),
+        child: Text('No saved characters match your search.'),
       );
     } else {
       content = RefreshIndicator(
-        onRefresh: _refreshFavorites,
+        onRefresh: _refreshSavedCharacters,
         child: Scrollbar(
           controller: _scrollController,
           thumbVisibility: true,
@@ -124,38 +139,18 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: _isSearching
-            ? TextField(
-          controller: _searchController,
-          autofocus: true,
-          decoration: const InputDecoration(
-            hintText: 'Search favorites...',
-            border: InputBorder.none,
-          ),
-          onChanged: _performSearch,
-          onSubmitted: (_) {
-            FocusScope.of(context).unfocus(); // Hide the keyboard
-          },
-        )
-            : const Text('Saved Characters'),
-        actions: _isSearching
-            ? [
-          IconButton(
-            icon: const Icon(Icons.close),
-            onPressed: _cancelSearch,
-          ),
-        ]
-            : [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () {
-              setState(() {
-                _isSearching = true;
-              });
-            },
-          ),
-        ],
+      appBar: CustomSearchBar(
+        isSearching: _isSearching,
+        searchController: _searchController,
+        hintText: 'Search saved...',
+        title: 'Dimension Keeper',
+        onSearch: _performSearch,
+        onCancel: _cancelSearch,
+        onStartSearch: () {
+          setState(() {
+            _isSearching = true;
+          });
+        },
       ),
       body: content,
     );

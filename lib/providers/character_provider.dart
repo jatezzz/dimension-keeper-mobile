@@ -34,31 +34,72 @@ class CharacterProvider with ChangeNotifier {
       throw error;
     } finally {
       _isLoading = false;
-      notifyListeners();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
     }
   }
 
-  // Clear characters when a new request starts
   void clearCharacters() {
     _allCharacters.clear();
     _isLoading = true;
     _currentPage = 1;
-    notifyListeners();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
   }
 
-  // Reset characters to their original state
   void resetCharacters() {
     _allCharacters.clear();
     _isLoading = false;
     _currentPage = 1;
-    notifyListeners();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
+  }
+
+  bool _isInitialized = false;
+
+  bool get isInitialized => _isInitialized;
+
+  Future<void> initialize() async {
+    if (_isInitialized) return;
+    try {
+      await fetchMyCharacters();
+      _isInitialized = true;
+
+      // Defer notifying listeners to after the current build frame
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
+    } catch (error) {
+      debugPrint('Error during initialization: $error');
+    }
+  }
+
+  Future<void> fetchMyCharacters() async {
+    try {
+      _myCharacters.clear();
+
+      final characters = await repository.fetchMyCharacters();
+      _myCharacters.addAll(characters);
+
+      // Defer notifying listeners to avoid build conflicts
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
+    } catch (error) {
+      throw error;
+    }
   }
 
   Future<void> fetchAllCharactersByName(String name) async {
     _isLoading = true;
     try {
       _allCharacters.clear();
-      notifyListeners();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
 
       final characters = await repository.fetchAllCharactersByName(name);
       _allCharacters.addAll(characters);
@@ -70,25 +111,13 @@ class CharacterProvider with ChangeNotifier {
     }
   }
 
-  Future<void> fetchMyCharacters() async {
-    try {
-      _myCharacters.clear();
-      notifyListeners();
-
-      final characters = await repository.fetchMyCharacters();
-      _myCharacters.addAll(characters);
-    } catch (error) {
-      throw error;
-    } finally {
-      notifyListeners();
-    }
-  }
-
   Future<void> createCharacter(Character character, BuildContext context) async {
     try {
       await repository.createCharacter(character);
       _myCharacters.add(character);
-      notifyListeners();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
     } catch (error) {
       ErrorHandler.handleError(context, error);
     }
@@ -100,7 +129,9 @@ class CharacterProvider with ChangeNotifier {
       final index = _myCharacters.indexWhere((item) => item.id == character.id);
       if (index != -1) {
         _myCharacters[index] = character;
-        notifyListeners();
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          notifyListeners();
+        });
       }
     } catch (error) {
       ErrorHandler.handleError(context, error);
@@ -111,7 +142,9 @@ class CharacterProvider with ChangeNotifier {
     try {
       await repository.deleteCharacter(characterId);
       _myCharacters.removeWhere((item) => item.id == characterId);
-      notifyListeners();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
     } catch (error) {
       ErrorHandler.handleError(context, error);
     }
