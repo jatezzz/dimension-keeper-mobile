@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:rick_and_morty_app/models/status_extension.dart';
 import '../models/character.dart';
-import '../screens/detail_item.dart';
+import 'detail_item.dart';
 
 class CharacterDetailsSection extends StatelessWidget {
   final Character character;
@@ -14,7 +15,7 @@ class CharacterDetailsSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          DetailItem(label: 'Status', value: character.status),
+          DetailItem(label: 'Status', value: character.status.toReadableString()),
           DetailItem(label: 'Species', value: character.species),
           DetailItem(label: 'Gender', value: character.gender),
           if (character.type.isNotEmpty)

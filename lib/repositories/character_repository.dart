@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
+import 'package:rick_and_morty_app/models/status_extension.dart';
 
 import '../models/character.dart';
 
@@ -30,7 +31,7 @@ class CharacterRepository {
         'id': character.id,
         'image': character.image,
         'name': character.name,
-        'status': character.status,
+        'status': character.status.toReadableString(),
         'species': character.species,
         'gender': character.gender,
         'type': character.type,
@@ -45,7 +46,7 @@ class CharacterRepository {
       headers: {'Content-Type': 'application/json'},
       body: json.encode({
         'name': character.name,
-        'status': character.status,
+        'status': character.status.toReadableString(),
         'species': character.species,
         'gender': character.gender,
         'type': character.type,

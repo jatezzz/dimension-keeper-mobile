@@ -98,8 +98,6 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final characterProvider = Provider.of<CharacterProvider>(context);
-
     Widget content;
 
     if (_isLoading) {
