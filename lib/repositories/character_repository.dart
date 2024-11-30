@@ -24,7 +24,7 @@ class CharacterRepository {
 
   Future<void> createCharacter(Character character) async {
     final response = await http.post(
-      Uri.parse("$_baseUrl"),
+      Uri.parse(_baseUrl),
       headers: {'Content-Type': 'application/json'},
       body: json.encode({
         'id': character.id,
@@ -59,7 +59,6 @@ class CharacterRepository {
     _checkResponse(response, 200, "Failed to delete character");
   }
 
-  // Parse the character list from response
   List<Character> _parseCharacterList(http.Response response,
       {bool isExternal = false}) {
     _checkResponse(response, 200, "Failed to fetch characters");
