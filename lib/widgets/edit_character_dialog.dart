@@ -1,40 +1,78 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:rick_and_morty_app/models/status_extension.dart';
 
 import '../models/character.dart';
+import '../models/status_extension.dart';
 import '../providers/character_provider.dart';
 
-class EditCharacterDialog extends StatelessWidget {
+class EditCharacterDialog extends StatefulWidget {
   final Character character;
 
   const EditCharacterDialog({super.key, required this.character});
 
   @override
-  Widget build(BuildContext context) {
-    final nameController = TextEditingController(text: character.name);
-    final statusController =
-        TextEditingController(text: character.status.toReadableString());
-    final speciesController = TextEditingController(text: character.species);
-    final genderController = TextEditingController(text: character.gender);
+  _EditCharacterDialogState createState() => _EditCharacterDialogState();
+}
 
+class _EditCharacterDialogState extends State<EditCharacterDialog> {
+  late TextEditingController nameController;
+  late TextEditingController speciesController;
+  late TextEditingController genderController;
+  late Status selectedStatus;
+
+  @override
+  void initState() {
+    super.initState();
+    nameController = TextEditingController(text: widget.character.name);
+    speciesController = TextEditingController(text: widget.character.species);
+    genderController = TextEditingController(text: widget.character.gender);
+    selectedStatus = widget.character.status;
+  }
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    speciesController.dispose();
+    genderController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return AlertDialog(
       title: const Text('Edit Character Info'),
       content: SingleChildScrollView(
         child: Column(
           children: [
             TextField(
-                controller: nameController,
-                decoration: const InputDecoration(labelText: 'Name')),
+              controller: nameController,
+              decoration: const InputDecoration(labelText: 'Name'),
+            ),
+            DropdownButtonFormField<Status>(
+              value: selectedStatus,
+              onChanged: (newValue) {
+                if (newValue != null) {
+                  setState(() {
+                    selectedStatus = newValue;
+                  });
+                }
+              },
+              decoration: const InputDecoration(labelText: 'Status'),
+              items: Status.values.map((status) {
+                return DropdownMenuItem<Status>(
+                  value: status,
+                  child: Text(status.toReadableString()),
+                );
+              }).toList(),
+            ),
             TextField(
-                controller: statusController,
-                decoration: const InputDecoration(labelText: 'Status')),
+              controller: speciesController,
+              decoration: const InputDecoration(labelText: 'Species'),
+            ),
             TextField(
-                controller: speciesController,
-                decoration: const InputDecoration(labelText: 'Species')),
-            TextField(
-                controller: genderController,
-                decoration: const InputDecoration(labelText: 'Gender')),
+              controller: genderController,
+              decoration: const InputDecoration(labelText: 'Gender'),
+            ),
           ],
         ),
       ),
@@ -45,16 +83,14 @@ class EditCharacterDialog extends StatelessWidget {
         ),
         ElevatedButton(
           onPressed: () {
-            var firstWhere = Status.values
-                  .firstWhere((it) => it.name.toLowerCase() == statusController.text.toLowerCase(), orElse: ()=>Status.unknown);
             final updatedCharacter = Character(
-              id: character.id,
+              id: widget.character.id,
               name: nameController.text,
-              status: firstWhere,
+              status: selectedStatus,
               species: speciesController.text,
               gender: genderController.text,
-              type: character.type,
-              image: character.image,
+              type: widget.character.type,
+              image: widget.character.image,
             );
 
             Provider.of<CharacterProvider>(context, listen: false)
