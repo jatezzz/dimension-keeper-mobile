@@ -54,25 +54,18 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final characterProvider = Provider.of<CharacterProvider>(context);
-
-    // Tabs content
     final List<Widget> pages = [
       if (characterProvider.isLoading)
         const Center(
-            child: CircularProgressIndicator()) // Show loading indicator
+            child: CircularProgressIndicator())
       else if (characterProvider.allCharacters.isEmpty)
-        const Center(child: Text('No characters found.')) // Show empty message
+        const Center(child: Text('No characters found.'))
       else
-        RefreshIndicator(
-          onRefresh: () =>
-              Provider.of<CharacterProvider>(context, listen: false)
-                  .fetchAllCharacters(),
-          child: Scrollbar(
-            thumbVisibility: true,
-            child: CharacterGrid(characterProvider.allCharacters),
-          ),
-        ),
-      const FavoritesScreen(), // Navigate to FavoritesScreen
+        buildRefreshIndicator(
+            () => Provider.of<CharacterProvider>(context, listen: false)
+                .fetchAllCharacters(),
+            CharacterGrid(characterProvider.allCharacters)),
+      const FavoritesScreen(),
     ];
 
     return Scaffold(
@@ -121,6 +114,17 @@ class _HomeScreenState extends State<HomeScreen> {
             label: 'Saved',
           ),
         ],
+      ),
+    );
+  }
+
+  RefreshIndicator buildRefreshIndicator(
+      Future<void> Function() onRefresh, Widget child) {
+    return RefreshIndicator(
+      onRefresh: onRefresh,
+      child: Scrollbar(
+        thumbVisibility: true,
+        child: child,
       ),
     );
   }

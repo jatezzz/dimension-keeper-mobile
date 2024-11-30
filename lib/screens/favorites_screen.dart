@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../providers/character_provider.dart';
 
 class FavoritesScreen extends StatefulWidget {
@@ -31,7 +32,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
 
   Future<void> _loadFavorites() async {
     try {
-      await Provider.of<CharacterProvider>(context, listen: false).fetchMyCharacters();
+      await Provider.of<CharacterProvider>(context, listen: false)
+          .fetchMyCharacters();
       setState(() {
         _isLoading = false;
         _errorMessage = null;
@@ -46,7 +48,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
 
   Future<void> _refreshFavorites() async {
     try {
-      await Provider.of<CharacterProvider>(context, listen: false).fetchMyCharacters();
+      await Provider.of<CharacterProvider>(context, listen: false)
+          .fetchMyCharacters();
     } catch (error) {
       setState(() {
         _errorMessage = error.toString();
@@ -59,34 +62,47 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     final characterProvider = Provider.of<CharacterProvider>(context);
 
     return RefreshIndicator(
-        onRefresh: _refreshFavorites,
-        child: _isLoading
-            ? const Center(
-          child: CircularProgressIndicator(), // Loading indicator
-        )
-            : _errorMessage != null
-            ? Center(
-          child: Text('Failed to load favorites: $_errorMessage'), // Error state
-        )
-            : characterProvider.myCharacters.isEmpty
-            ? const Center(
-          child: Text('No favorites added yet.'), // Empty state
-        )
-            : Scrollbar(
-          thumbVisibility: true,
-          controller: _scrollController,
-          child: ListView.builder(
-            controller: _scrollController,
-            itemCount: characterProvider.myCharacters.length,
-            itemBuilder: (context, index) {
-              final character = characterProvider.myCharacters[index];
-              return ListTile(
-                title: Text(character.name),
-                subtitle: Text(character.species),
-              );
-            },
-          ),
-        ),
+      onRefresh: _refreshFavorites,
+      child: _isLoading
+          ? const Center(
+              child: CircularProgressIndicator(), // Loading indicator
+            )
+          : _errorMessage != null
+              ? Center(
+                  child: Text(
+                      'Failed to load favorites: $_errorMessage'), // Error state
+                )
+              : characterProvider.myCharacters.isEmpty
+                  ? const Center(
+                      child: Text('No favorites added yet.'), // Empty state
+                    )
+                  : buildRefreshIndicator(
+                      _refreshFavorites,
+                      ListView.builder(
+                        controller: _scrollController,
+                        itemCount: characterProvider.myCharacters.length,
+                        itemBuilder: (context, index) {
+                          final character =
+                              characterProvider.myCharacters[index];
+                          return ListTile(
+                            title: Text(character.name),
+                            subtitle: Text(character.species),
+                          );
+                        },
+                      ),
+                    ),
+    );
+  }
+
+  RefreshIndicator buildRefreshIndicator(
+      Future<void> Function() onRefresh, Widget child) {
+    return RefreshIndicator(
+      onRefresh: onRefresh,
+      child: Scrollbar(
+        controller: _scrollController,
+        thumbVisibility: true,
+        child: child,
+      ),
     );
   }
 }
