@@ -7,36 +7,36 @@ import '../providers/character_provider.dart';
 
 class CharacterGrid extends StatefulWidget {
   final List<Character> characters;
+  final ScrollController _scrollController;
 
-  const CharacterGrid(this.characters, {super.key});
+  const CharacterGrid(this.characters, this._scrollController, {super.key});
 
   @override
   _CharacterGridState createState() => _CharacterGridState();
 }
 
 class _CharacterGridState extends State<CharacterGrid> {
-  late ScrollController _scrollController;
 
   @override
   void initState() {
     super.initState();
-    _scrollController = ScrollController();
-
-    _scrollController.addListener(() {
-      if (_scrollController.position.pixels >=
-              _scrollController.position.maxScrollExtent &&
-          !Provider.of<CharacterProvider>(context, listen: false).isLoading) {
-        Provider.of<CharacterProvider>(context, listen: false)
-            .fetchAllCharacters(isNextPage: true);
-      }
-    });
+    // _scrollController = ScrollController();
+    //
+    // _scrollController.addListener(() {
+    //   if (_scrollController.position.pixels >=
+    //           _scrollController.position.maxScrollExtent &&
+    //       !Provider.of<CharacterProvider>(context, listen: false).isLoading) {
+    //     Provider.of<CharacterProvider>(context, listen: false)
+    //         .fetchAllCharacters(isNextPage: true);
+    //   }
+    // });
   }
 
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
+  // @override
+  // void dispose() {
+  //   _scrollController.dispose();
+  //   super.dispose();
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +45,7 @@ class _CharacterGridState extends State<CharacterGrid> {
     return Stack(
       children: [
         GridView.builder(
-          controller: _scrollController,
+          controller: widget._scrollController,
           padding: const EdgeInsets.all(10),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount:

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/character_provider.dart';
+import '../widgets/character_grid.dart';
 
 class FavoritesScreen extends StatefulWidget {
   const FavoritesScreen({super.key});
@@ -78,18 +79,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                     )
                   : buildRefreshIndicator(
                       _refreshFavorites,
-                      ListView.builder(
-                        controller: _scrollController,
-                        itemCount: characterProvider.myCharacters.length,
-                        itemBuilder: (context, index) {
-                          final character =
-                              characterProvider.myCharacters[index];
-                          return ListTile(
-                            title: Text(character.name),
-                            subtitle: Text(character.species),
-                          );
-                        },
-                      ),
+                      CharacterGrid(
+                          characterProvider.myCharacters, _scrollController),
                     ),
     );
   }
