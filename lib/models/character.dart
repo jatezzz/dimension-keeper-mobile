@@ -1,5 +1,5 @@
 class Character {
-  final int id;
+  final String id;
   final String name;
   final String image;
   final String status;
@@ -19,12 +19,12 @@ class Character {
 
   factory Character.fromJson(Map<String, dynamic> json) {
     return Character(
-      id: json['id'],
-      name: json['name'],
-      image: json['image'],
-      status: json['status'],
-      species: json['species'],
-      gender: json['gender'],
+      id: json['id'].toString(),
+      name: json['name'] ?? '',
+      image: json['image'] ?? '',
+      status: json['status'] ?? '',
+      species: json['species'] ?? '',
+      gender: json['gender'] ?? '',
       type: json['type'] ?? '',
     );
   }

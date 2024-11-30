@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/character_provider.dart';
 import '../widgets/character_grid.dart';
+import 'favorites_screen.dart'; // Import the FavoritesScreen
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -56,9 +57,7 @@ class _HomeScreenState extends State<HomeScreen> {
         const Center(child: Text('No characters found.')) // Show empty message
       else
         CharacterGrid(characterProvider.allCharacters),
-      characterProvider.favorites.isEmpty
-          ? const Center(child: Text('No favorite characters yet.'))
-          : CharacterGrid(characterProvider.favorites),
+      const FavoritesScreen(), // Navigate to FavoritesScreen
     ];
 
     return Scaffold(

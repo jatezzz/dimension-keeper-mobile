@@ -7,8 +7,20 @@ import '../providers/character_provider.dart';
 class CharacterDetailScreen extends StatelessWidget {
   final Character character;
 
-  const CharacterDetailScreen({Key? key, required this.character})
-      : super(key: key);
+  const CharacterDetailScreen({super.key, required this.character});
+
+  void _saveCharacter(BuildContext context) async {
+    try {
+      await Provider.of<CharacterProvider>(context, listen: false).createCharacter(character);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Character saved successfully!')),
+      );
+    } catch (error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to save character. Please try again.')),
+      );
+    }
+  }
 
   void _showEditDialog(BuildContext context, Character character) {
     final nameController = TextEditingController(text: character.name);
@@ -20,25 +32,25 @@ class CharacterDetailScreen extends StatelessWidget {
       context: context,
       builder: (ctx) {
         return AlertDialog(
-          title: Text('Edit Character'),
+          title: const Text('Edit Character'),
           content: SingleChildScrollView(
             child: Column(
               children: [
                 TextField(
                   controller: nameController,
-                  decoration: InputDecoration(labelText: 'Name'),
+                  decoration: const InputDecoration(labelText: 'Name'),
                 ),
                 TextField(
                   controller: statusController,
-                  decoration: InputDecoration(labelText: 'Status'),
+                  decoration: const InputDecoration(labelText: 'Status'),
                 ),
                 TextField(
                   controller: speciesController,
-                  decoration: InputDecoration(labelText: 'Species'),
+                  decoration: const InputDecoration(labelText: 'Species'),
                 ),
                 TextField(
                   controller: genderController,
-                  decoration: InputDecoration(labelText: 'Gender'),
+                  decoration: const InputDecoration(labelText: 'Gender'),
                 ),
               ],
             ),
@@ -46,7 +58,7 @@ class CharacterDetailScreen extends StatelessWidget {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(),
-              child: Text('Cancel'),
+              child: const Text('Cancel'),
             ),
             ElevatedButton(
               onPressed: () {
@@ -64,7 +76,7 @@ class CharacterDetailScreen extends StatelessWidget {
                     .updateCharacter(updatedCharacter);
                 Navigator.of(ctx).pop();
               },
-              child: Text('Save'),
+              child: const Text('Save'),
             ),
           ],
         );
@@ -72,17 +84,17 @@ class CharacterDetailScreen extends StatelessWidget {
     );
   }
 
-  void _showDeleteDialog(BuildContext context, int characterId) {
+  void _showDeleteDialog(BuildContext context, String characterId) {
     showDialog(
       context: context,
       builder: (ctx) {
         return AlertDialog(
-          title: Text('Delete Character'),
-          content: Text('Are you sure you want to delete this character?'),
+          title: const Text('Delete Character'),
+          content: const Text('Are you sure you want to delete this character?'),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(),
-              child: Text('Cancel'),
+              child: const Text('Cancel'),
             ),
             ElevatedButton(
               onPressed: () {
@@ -91,7 +103,7 @@ class CharacterDetailScreen extends StatelessWidget {
                 Navigator.of(ctx).pop();
                 Navigator.of(context).pop(); // Go back to the previous screen
               },
-              child: Text('Delete'),
+              child: const Text('Delete'),
             ),
           ],
         );
@@ -101,15 +113,14 @@ class CharacterDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final characterProvider =
-        Provider.of<CharacterProvider>(context, listen: false);
+    final characterProvider = Provider.of<CharacterProvider>(context, listen: false);
 
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.of(context).pop(),
         ),
         actions: [
@@ -125,11 +136,11 @@ class CharacterDetailScreen extends StatelessWidget {
             },
           ),
           IconButton(
-            icon: Icon(Icons.edit, color: Colors.blue),
+            icon: const Icon(Icons.edit, color: Colors.blue),
             onPressed: () => _showEditDialog(context, character),
           ),
           IconButton(
-            icon: Icon(Icons.delete, color: Colors.red),
+            icon: const Icon(Icons.delete, color: Colors.red),
             onPressed: () => _showDeleteDialog(context, character.id),
           ),
         ],
@@ -149,7 +160,7 @@ class CharacterDetailScreen extends StatelessWidget {
                     width: double.infinity,
                     decoration: BoxDecoration(
                       borderRadius:
-                          BorderRadius.vertical(bottom: Radius.circular(24)),
+                      const BorderRadius.vertical(bottom: Radius.circular(24)),
                       image: DecorationImage(
                         image: NetworkImage(character.image),
                         fit: BoxFit.cover,
@@ -171,10 +182,10 @@ class CharacterDetailScreen extends StatelessWidget {
                       character.name,
                       textAlign: TextAlign.center,
                       style:
-                          Theme.of(context).textTheme.headlineMedium!.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
+                      Theme.of(context).textTheme.headlineMedium!.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
@@ -193,23 +204,12 @@ class CharacterDetailScreen extends StatelessWidget {
                   if (character.type.isNotEmpty)
                     DetailItem(label: 'Type', value: character.type),
                   const SizedBox(height: 16),
-                  Text(
-                    'Origin',
-                    style: Theme.of(context).textTheme.headlineSmall,
+                  Center(
+                    child: ElevatedButton(
+                      onPressed: () => _saveCharacter(context),
+                      child: const Text('Save Character'),
+                    ),
                   ),
-                  // Text(
-                  //   character.origin['name'],
-                  //   style: Theme.of(context).textTheme.bodyMedium,
-                  // ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Location',
-                    style: Theme.of(context).textTheme.headlineSmall,
-                  ),
-                  // Text(
-                  //   character.location['name'],
-                  //   style: Theme.of(context).textTheme.bodyMedium,
-                  // ),
                 ],
               ),
             ),
@@ -225,8 +225,7 @@ class DetailItem extends StatelessWidget {
   final String label;
   final String value;
 
-  const DetailItem({Key? key, required this.label, required this.value})
-      : super(key: key);
+  const DetailItem({super.key, required this.label, required this.value});
 
   @override
   Widget build(BuildContext context) {
@@ -237,8 +236,8 @@ class DetailItem extends StatelessWidget {
           Text(
             '$label:',
             style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(width: 8),
           Expanded(

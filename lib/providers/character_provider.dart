@@ -1,8 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 import '../models/character.dart';
 
@@ -14,6 +15,7 @@ class CharacterProvider with ChangeNotifier {
   final List<Character> _favorites = [];
 
   List<Character> get myCharacters => [..._myCharacters];
+
   List<Character> get favorites => [..._favorites];
 
   int _currentPage = 1; // Track the current page
@@ -21,10 +23,12 @@ class CharacterProvider with ChangeNotifier {
   bool _hasMore = true; // Track if more data is available
 
   List<Character> get allCharacters => [..._allCharacters];
+
   bool get isLoading => _isLoading;
 
   // Utility method to log HTTP requests and responses
-  Future<http.Response> _logHttpRequest(Future<http.Response> Function() request) async {
+  Future<http.Response> _logHttpRequest(
+      Future<http.Response> Function() request) async {
     try {
       final response = await request();
       print("HTTP Request: ${response.request}");
@@ -44,11 +48,10 @@ class CharacterProvider with ChangeNotifier {
       notifyListeners();
 
       final response = await _logHttpRequest(
-            () => http.get(Uri.parse("$_baseUrl/all?page=$_currentPage")),
+        () => http.get(Uri.parse("$_baseUrl/all?page=$_currentPage")),
       );
 
       final data = json.decode(response.body);
-
       if (data['results'] != null) {
         final newCharacters = (data['results'] as List)
             .map((item) => Character.fromJson(item))
@@ -115,17 +118,12 @@ class CharacterProvider with ChangeNotifier {
   Future<void> fetchMyCharacters() async {
     try {
       final response = await _logHttpRequest(
-            () => http.get(Uri.parse("$_baseUrl/me")),
+        () => http.get(Uri.parse("$_baseUrl/me")),
       );
-
       final data = json.decode(response.body);
-
-      if (data['results'] != null) {
-        _myCharacters = (data['results'] as List)
-            .map((item) => Character.fromJson(item))
-            .toList();
-        notifyListeners();
-      }
+      _myCharacters =
+          (data as List).map((item) => Character.fromJson(item)).toList();
+      notifyListeners();
     } catch (error) {
       print("Error fetching my characters: $error");
       throw error;
@@ -144,7 +142,7 @@ class CharacterProvider with ChangeNotifier {
   Future<void> createCharacter(Character character) async {
     try {
       final response = await _logHttpRequest(
-            () => http.post(
+        () => http.post(
           Uri.parse("$_baseUrl"),
           headers: {'Content-Type': 'application/json'},
           body: json.encode({
@@ -172,7 +170,7 @@ class CharacterProvider with ChangeNotifier {
   Future<void> updateCharacter(Character character) async {
     try {
       final response = await _logHttpRequest(
-            () => http.put(
+        () => http.put(
           Uri.parse("$_baseUrl/${character.id}"),
           headers: {'Content-Type': 'application/json'},
           body: json.encode({
@@ -186,7 +184,8 @@ class CharacterProvider with ChangeNotifier {
       );
 
       if (response.statusCode == 200) {
-        final index = _myCharacters.indexWhere((item) => item.id == character.id);
+        final index =
+            _myCharacters.indexWhere((item) => item.id == character.id);
         if (index != -1) {
           _myCharacters[index] = character;
           notifyListeners();
@@ -200,10 +199,10 @@ class CharacterProvider with ChangeNotifier {
     }
   }
 
-  Future<void> deleteCharacter(int characterId) async {
+  Future<void> deleteCharacter(String characterId) async {
     try {
       final response = await _logHttpRequest(
-            () => http.delete(Uri.parse("$_baseUrl/$characterId")),
+        () => http.delete(Uri.parse("$_baseUrl/$characterId")),
       );
 
       if (response.statusCode == 200) {
