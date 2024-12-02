@@ -111,7 +111,7 @@ class CharacterProvider with ChangeNotifier {
     }
   }
 
-  Future<void> createCharacter(Character character, BuildContext context) async {
+  Future<void> createCharacter(Character character, BuildContext? context) async {
     try {
       await repository.createCharacter(character);
       _myCharacters.add(character);
@@ -123,7 +123,7 @@ class CharacterProvider with ChangeNotifier {
     }
   }
 
-  Future<void> updateCharacter(Character character, BuildContext context) async {
+  Future<void> updateCharacter(Character character, BuildContext? context) async {
     try {
       await repository.updateCharacter(character);
       final index = _myCharacters.indexWhere((item) => item.id == character.id);
@@ -138,7 +138,7 @@ class CharacterProvider with ChangeNotifier {
     }
   }
 
-  Future<void> deleteCharacter(String characterId, BuildContext context) async {
+  Future<void> deleteCharacter(String characterId, BuildContext? context) async {
     try {
       await repository.deleteCharacter(characterId);
       _myCharacters.removeWhere((item) => item.id == characterId);
