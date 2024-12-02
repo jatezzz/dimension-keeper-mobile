@@ -16,6 +16,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
   late ScrollController _scrollController;
   final TextEditingController _searchController = TextEditingController();
   bool _isSearching = false;
+  bool _isFirstLoad = true;
 
   @override
   void initState() {
@@ -37,13 +38,18 @@ class _ExploreScreenState extends State<ExploreScreen> {
   Future<void> _loadAllCharacters() async {
     try {
       final provider = Provider.of<CharacterProvider>(context, listen: false);
-      if (provider.isInitialized) {
-        await provider.fetchAllCharacters();
-      } else {
+      if (!provider.isInitialized) {
         await provider.initialize();
+      } else {
+        await provider.fetchAllCharacters();
       }
+      setState(() {
+        _isFirstLoad = false;
+      });
     } catch (error) {
-      // Error handling is done by provider, no need to update local state here.
+      setState(() {
+        _isFirstLoad = false;
+      });
     }
   }
 
@@ -89,7 +95,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
       ),
       body: Consumer<CharacterProvider>(
         builder: (context, characterProvider, _) {
-          if (characterProvider.isLoading) {
+          if (_isFirstLoad && characterProvider.isLoading) {
             return const Center(
               child: CircularProgressIndicator(),
             );
