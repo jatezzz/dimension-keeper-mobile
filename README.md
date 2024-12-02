@@ -8,6 +8,12 @@ A Flutter application for exploring and managing characters from the Rick and Mo
 
 ---
 
+## Architecure
+
+![ZLDDRy8m3BttLrWzRGV-maIX0rKQ4g93Eo0E9h4W8asYD6Mhfltt1KhJyYMHK_By_9vjESFIeNLL8QDoBvH1YmKmNHYjIBdSrPB04dEejfAYo23RuvOWNWYs1rGSPjgw6YQoSeui9CR4y1k1FwiP2dK4u6M6FYPG-iVh6WQ3DrZDhJu8JhPSFq5UPf0pIwGy-qGF1K8SX5hVaznuvnjXNgWDdvK2lY2ZI-6qhPi2_cw4EzCB](https://github.com/user-attachments/assets/12b89025-13a3-4f3a-beea-f2ef9a28749f)
+
+---
+
 ## 🚀 Features
 
 - **Explore Characters**: Browse through a list of characters with details like name, status, species, and more.
