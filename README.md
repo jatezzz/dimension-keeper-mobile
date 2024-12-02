@@ -1,16 +1,32 @@
-# rick_and_morty_app
+# Dimension Keeper App
 
-A new Flutter project.
+A Flutter application for exploring and managing characters from the Rick and Morty universe. The app features character details, the ability to save favorite characters, and search functionality.
 
-## Getting Started
+---
 
-This project is a starting point for a Flutter application.
+## 🚀 Features
 
-A few resources to get you started if this is your first Flutter project:
+- **Explore Characters**: Browse through a list of characters with details like name, status, species, and more.
+- **Save Favorites**: Mark characters as favorites and access them in a dedicated saved section.
+- **Search**: Search for characters by name to quickly find your favorites.
+- **Edit Characters**: Update character details dynamically.
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+---
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## 📦 Dependencies
+
+- **Flutter SDK**
+- **Provider**: State management.
+- **Mockito**: For mocking during tests.
+- **Integration Test**: For end-to-end testing.
+- **Flutter Dotenv**: For managing environment variables.
+- **Build Runner**: For code generation.
+
+---
+
+## 🛠️ Installation
+
+### 1. Clone the Repository
+```bash
+git clone https://github.com/your-username/rick-and-morty-app.git
+cd rick-and-morty-app
