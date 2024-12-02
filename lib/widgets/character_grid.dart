@@ -18,27 +18,6 @@ class CharacterGrid extends StatefulWidget {
 class _CharacterGridState extends State<CharacterGrid> {
 
   @override
-  void initState() {
-    super.initState();
-    // _scrollController = ScrollController();
-    //
-    // _scrollController.addListener(() {
-    //   if (_scrollController.position.pixels >=
-    //           _scrollController.position.maxScrollExtent &&
-    //       !Provider.of<CharacterProvider>(context, listen: false).isLoading) {
-    //     Provider.of<CharacterProvider>(context, listen: false)
-    //         .fetchAllCharacters(isNextPage: true);
-    //   }
-    // });
-  }
-
-  // @override
-  // void dispose() {
-  //   _scrollController.dispose();
-  //   super.dispose();
-  // }
-
-  @override
   Widget build(BuildContext context) {
     final provider = Provider.of<CharacterProvider>(context);
 

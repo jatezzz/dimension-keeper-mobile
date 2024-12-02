@@ -49,7 +49,6 @@ class _SaveScreenState extends State<SaveScreen> with RouteAware {
 
   @override
   void didPopNext() {
-    // Called when navigating back to this screen
     _loadSavedCharacters();
   }
 

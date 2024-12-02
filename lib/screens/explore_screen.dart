@@ -14,8 +14,6 @@ class ExploreScreen extends StatefulWidget {
 
 class _ExploreScreenState extends State<ExploreScreen> {
   late ScrollController _scrollController;
-  bool _isLoading = true;
-  String? _errorMessage;
   final TextEditingController _searchController = TextEditingController();
   bool _isSearching = false;
 
@@ -25,7 +23,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
     _scrollController = ScrollController();
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >=
-              _scrollController.position.maxScrollExtent &&
+          _scrollController.position.maxScrollExtent &&
           !Provider.of<CharacterProvider>(context, listen: false).isLoading) {
         Provider.of<CharacterProvider>(context, listen: false)
             .fetchAllCharacters(isNextPage: true);
@@ -39,18 +37,13 @@ class _ExploreScreenState extends State<ExploreScreen> {
   Future<void> _loadAllCharacters() async {
     try {
       final provider = Provider.of<CharacterProvider>(context, listen: false);
-      provider.isInitialized
-          ? provider.fetchAllCharacters()
-          : provider.initialize().then((_) => provider.fetchAllCharacters());
-      setState(() {
-        _isLoading = false;
-        _errorMessage = null;
-      });
+      if (provider.isInitialized) {
+        await provider.fetchAllCharacters();
+      } else {
+        await provider.initialize();
+      }
     } catch (error) {
-      setState(() {
-        _isLoading = false;
-        _errorMessage = error.toString();
-      });
+      // Error handling is done by provider, no need to update local state here.
     }
   }
 
@@ -80,37 +73,6 @@ class _ExploreScreenState extends State<ExploreScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final characterProvider = Provider.of<CharacterProvider>(context);
-
-    Widget content;
-
-    if (_isLoading) {
-      content = const Center(
-        child: CircularProgressIndicator(),
-      );
-    } else if (_errorMessage != null) {
-      content = Center(
-        child: Text('Failed to load characters: $_errorMessage'),
-      );
-    } else if (characterProvider.allCharacters.isEmpty) {
-      content = const Center(
-        child: Text('No characters found.'),
-      );
-    } else {
-      content = RefreshIndicator(
-        onRefresh: () => Provider.of<CharacterProvider>(context, listen: false)
-            .fetchAllCharacters(),
-        child: Scrollbar(
-          controller: _scrollController,
-          thumbVisibility: true,
-          child: CharacterGrid(
-            characterProvider.allCharacters,
-            _scrollController,
-          ),
-        ),
-      );
-    }
-
     return Scaffold(
       appBar: CustomSearchBar(
         isSearching: _isSearching,
@@ -125,7 +87,33 @@ class _ExploreScreenState extends State<ExploreScreen> {
           });
         },
       ),
-      body: content,
+      body: Consumer<CharacterProvider>(
+        builder: (context, characterProvider, _) {
+          if (characterProvider.isLoading) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          } else if (characterProvider.allCharacters.isEmpty) {
+            return const Center(
+              child: Text('No characters found.'),
+            );
+          } else {
+            return RefreshIndicator(
+              onRefresh: () =>
+                  Provider.of<CharacterProvider>(context, listen: false)
+                      .fetchAllCharacters(),
+              child: Scrollbar(
+                controller: _scrollController,
+                thumbVisibility: true,
+                child: CharacterGrid(
+                  characterProvider.allCharacters,
+                  _scrollController,
+                ),
+              ),
+            );
+          }
+        },
+      ),
     );
   }
 }

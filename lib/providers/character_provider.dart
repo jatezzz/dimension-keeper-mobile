@@ -68,7 +68,6 @@ class CharacterProvider with ChangeNotifier {
       await fetchMyCharacters();
       _isInitialized = true;
 
-      // Defer notifying listeners to after the current build frame
       WidgetsBinding.instance.addPostFrameCallback((_) {
         notifyListeners();
       });
@@ -84,7 +83,6 @@ class CharacterProvider with ChangeNotifier {
       final characters = await repository.fetchMyCharacters();
       _myCharacters.addAll(characters);
 
-      // Defer notifying listeners to avoid build conflicts
       WidgetsBinding.instance.addPostFrameCallback((_) {
         notifyListeners();
       });

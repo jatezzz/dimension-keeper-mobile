@@ -16,8 +16,8 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final List<Widget> pages = [
-      const ExploreScreen(), // Inject ExploreScreen
-      const SaveScreen(), // Inject FavoritesScreen
+      const ExploreScreen(),
+      const SaveScreen(),
     ];
 
     return Scaffold(

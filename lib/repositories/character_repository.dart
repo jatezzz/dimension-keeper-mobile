@@ -74,7 +74,6 @@ class CharacterRepository {
         .toList();
   }
 
-  // Check response status and throw an error if necessary
   void _checkResponse(http.Response response, int expectedStatus, String errorMessage) {
     if (response.statusCode != expectedStatus) {
       throw Exception("$errorMessage: ${response.statusCode} - ${response.body}");

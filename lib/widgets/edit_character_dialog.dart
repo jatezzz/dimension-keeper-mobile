@@ -40,7 +40,6 @@ class _EditCharacterDialogState extends State<EditCharacterDialog> {
 
   Future<void> _handleSave(BuildContext context) async {
     try {
-      // Show loading indicator
       showDialog(
         context: context,
         barrierDismissible: false,
@@ -59,19 +58,16 @@ class _EditCharacterDialogState extends State<EditCharacterDialog> {
         image: widget.character.image,
       );
 
-      // Update character
       await Provider.of<CharacterProvider>(context, listen: false)
           .updateCharacter(updatedCharacter, context);
 
-      // Refresh character list
       await Provider.of<CharacterProvider>(context, listen: false)
           .fetchMyCharacters();
 
-      // Close loading indicator and dialog
-      Navigator.of(context).pop(); // Close loading indicator
-      Navigator.of(context).pop(updatedCharacter); // Return updated character
+      Navigator.of(context).pop();
+      Navigator.of(context).pop(updatedCharacter);
     } catch (error) {
-      Navigator.of(context).pop(); // Close loading indicator
+      Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to update character: $error')),
       );
@@ -127,7 +123,7 @@ class _EditCharacterDialogState extends State<EditCharacterDialog> {
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.of(context).pop(), // Cancel without returning anything
+          onPressed: () => Navigator.of(context).pop(),
           child: const Text('Cancel'),
         ),
         ElevatedButton(

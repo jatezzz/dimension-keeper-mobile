@@ -59,7 +59,6 @@ class CharacterCard extends StatelessWidget {
                 ),
               ],
             ),
-            // Favorite Icon
             if (isFavorite)
               const Positioned(
                 top: 8,

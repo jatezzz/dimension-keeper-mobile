@@ -20,7 +20,7 @@ class CharacterDetailScreen extends StatefulWidget {
 class _CharacterDetailScreenState extends State<CharacterDetailScreen> {
   late Character character;
   late bool isSaved;
-  bool _isLoading = false; // To track the loading state
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -45,7 +45,7 @@ class _CharacterDetailScreenState extends State<CharacterDetailScreen> {
 
   Future<void> _handleSaveCharacter() async {
     setState(() {
-      _isLoading = true; // Show loader
+      _isLoading = true;
     });
     try {
       await Provider.of<CharacterProvider>(context, listen: false)
@@ -60,7 +60,7 @@ class _CharacterDetailScreenState extends State<CharacterDetailScreen> {
       _showSnackBar('Failed to save character. Please try again.');
     } finally {
       setState(() {
-        _isLoading = false; // Hide loader
+        _isLoading = false;
       });
     }
   }
@@ -72,7 +72,7 @@ class _CharacterDetailScreenState extends State<CharacterDetailScreen> {
     );
     if (updatedCharacter != null) {
       setState(() {
-        character = updatedCharacter; // Update character with new data
+        character = updatedCharacter;
         _checkIfSaved();
       });
     }
@@ -80,7 +80,7 @@ class _CharacterDetailScreenState extends State<CharacterDetailScreen> {
 
   Future<void> _handleDeleteCharacter() async {
     setState(() {
-      _isLoading = true; // Show loader
+      _isLoading = true;
     });
     try {
       final result = await showDialog<bool>(
@@ -92,14 +92,14 @@ class _CharacterDetailScreenState extends State<CharacterDetailScreen> {
         await Provider.of<CharacterProvider>(context, listen: false)
             .fetchMyCharacters();
         setState(() {
-          _checkIfSaved(); // Update state after deletion
+          _checkIfSaved();
         });
       }
     } catch (error) {
       _showSnackBar('Failed to delete character. Please try again.');
     } finally {
       setState(() {
-        _isLoading = false; // Hide loader
+        _isLoading = false;
       });
     }
   }
@@ -147,7 +147,7 @@ class _CharacterDetailScreenState extends State<CharacterDetailScreen> {
         ),
         if (_isLoading)
           Container(
-            color: Colors.black.withOpacity(0.5), // Semi-transparent overlay
+            color: Colors.black.withOpacity(0.5),
             child: const Center(
               child: CircularProgressIndicator(),
             ),

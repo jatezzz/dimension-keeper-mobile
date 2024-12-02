@@ -35,7 +35,7 @@ class CustomSearchBar extends StatelessWidget implements PreferredSizeWidget {
         ),
         style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
         onChanged: onSearch,
-        onSubmitted: (_) => FocusScope.of(context).unfocus(), // Hide keyboard
+        onSubmitted: (_) => FocusScope.of(context).unfocus(),
       )
           : Text(
         title,
