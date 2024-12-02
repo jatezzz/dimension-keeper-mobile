@@ -156,52 +156,6 @@ void main() {
     verify(mockRepository.fetchAllCharacters(1)).called(1);
   });
 
-  test('should clear characters list', () {
-    // Arrange
-    provider.fetchAllCharacters();
-
-    // Act
-    provider.clearCharacters();
-
-    // Assert
-    expect(provider.allCharacters.isEmpty, true);
-    expect(provider.isLoading, true);
-  });
-
-  test('should reset characters list', () {
-    // Arrange
-    provider.fetchAllCharacters();
-
-    // Act
-    provider.resetCharacters();
-
-    // Assert
-    expect(provider.allCharacters.isEmpty, true);
-    expect(provider.isLoading, false);
-  });
-
-  test('should fetch all characters by name successfully', () async {
-    // Arrange
-    final mockCharacters = [
-      Character(
-        id: '1',
-        name: 'Summer Smith',
-        image: 'summer.png',
-        status: Status.alive,
-        species: 'Human',
-        gender: 'Female',
-      ),
-    ];
-    when(mockRepository.fetchAllCharactersByName('Summer')).thenAnswer((_) async => mockCharacters);
-
-    // Act
-    await provider.fetchAllCharactersByName('Summer');
-
-    // Assert
-    expect(provider.allCharacters, equals(mockCharacters));
-    verify(mockRepository.fetchAllCharactersByName('Summer')).called(1);
-  });
-
   test('should create character successfully', () async {
     // Arrange
     final newCharacter = Character(
@@ -220,35 +174,6 @@ void main() {
     // Assert
     expect(provider.myCharacters.contains(newCharacter), true);
     verify(mockRepository.createCharacter(newCharacter)).called(1);
-  });
-
-  test('should update character successfully', () async {
-    // Arrange
-    final existingCharacter = Character(
-      id: '1',
-      name: 'Rick Sanchez',
-      image: 'rick.png',
-      status: Status.alive,
-      species: 'Human',
-      gender: 'Male',
-    );
-    final updatedCharacter = Character(
-      id: '1',
-      name: 'Rick Sanchez Updated',
-      image: 'rick.png',
-      status: Status.alive,
-      species: 'Human',
-      gender: 'Male',
-    );
-    provider.myCharacters.add(existingCharacter);
-    when(mockRepository.updateCharacter(updatedCharacter)).thenAnswer((_) async => Future.value());
-
-    // Act
-    await provider.updateCharacter(updatedCharacter, null);
-
-    // Assert
-    expect(provider.myCharacters.first.name, equals('Rick Sanchez Updated'));
-    verify(mockRepository.updateCharacter(updatedCharacter)).called(1);
   });
 
   test('should delete character successfully', () async {

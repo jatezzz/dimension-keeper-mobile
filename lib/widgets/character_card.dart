@@ -41,7 +41,7 @@ class CharacterCard extends StatelessWidget {
                     top: Radius.circular(16.0),
                   ),
                   child: AspectRatio(
-                    aspectRatio: 1.25,
+                    aspectRatio: 1.3,
                     child: Image.network(
                       character.image,
                       fit: BoxFit.cover,
