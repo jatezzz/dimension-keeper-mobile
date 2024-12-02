@@ -2,6 +2,8 @@
 
 A Flutter application for exploring and managing characters from the Rick and Morty universe. The app features character details, the ability to save favorite characters, and search functionality.
 
+![image](./content.gif)
+
 <img src="https://github.com/user-attachments/assets/e374aa83-d613-4fe0-97e3-ddc1cbd21bd7" width="200" />
 
 <img src="https://github.com/user-attachments/assets/7ed00d3e-dfef-4276-a544-f818308ee25b" width="200" />
