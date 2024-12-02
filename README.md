@@ -28,5 +28,24 @@ A Flutter application for exploring and managing characters from the Rick and Mo
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/your-username/rick-and-morty-app.git
+git clone https://github.com/jatezzz/rick-and-morty-app.git
 cd rick-and-morty-app
+```
+### 2. Install Dependencies
+Run the following command to install Flutter dependencies:
+
+```bash
+flutter pub get
+```
+### 3. Generate Code
+Before running the tests, generate the necessary files using build_runner:
+
+```bash
+flutter pub run build_runner build
+```
+4. Run the App
+Start the app on an emulator or a physical device:
+
+```bash
+flutter run
+```
