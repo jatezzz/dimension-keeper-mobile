@@ -53,3 +53,16 @@ Start the app on an emulator or a physical device:
 ```bash
 flutter run
 ```
+
+### 🧪 Testing
+Run all unit tests using:
+
+```bash
+flutter test
+```
+
+### 🛠️ Environment Variables
+The app uses environment variables for configuration. Add a .env file in the root directory with the following structure:
+```bash
+BASE_URL=https://your-api-url.com
+```
