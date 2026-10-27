@@ -1,76 +1,27 @@
-# Dimension Keeper App
+# dimension-keeper-mobile
 
-A Flutter application for exploring and managing characters from the Rick and Morty universe. The app features character details, the ability to save favorite characters, and search functionality.
+A Flutter app to explore characters from the public Rick and Morty API, save favorites, and create, edit and delete your own custom characters through a companion serverless API (dimension-keeper-backend).
 
-![image](./content.gif)
+## Context
 
-<img src="https://github.com/user-attachments/assets/e374aa83-d613-4fe0-97e3-ddc1cbd21bd7" width="200" />
+Built from 29 November to 2 December 2024, together with its back end.
 
-<img src="https://github.com/user-attachments/assets/7ed00d3e-dfef-4276-a544-f818308ee25b" width="200" />
+## What it shows
 
----
+- Provider for state management. A `CharacterProvider` handles paging, search, saving, and errors through a dedicated error handler.
+- A repository layer over `http`, with the base URL in a `.env` file via flutter_dotenv and a template file committed instead of real values.
+- Infinite scroll with a scroll listener, pull to refresh, and a search bar.
+- Small single-purpose widgets (card, grid, image header, detail sections, edit and delete dialogs) and a status enum with extensions.
+- Unit tests for the provider with Mockito-generated mocks, and flutter_lints.
 
-## Architecure
+## Stack
 
-![ZLDDRy8m3BttLrWzRGV-maIX0rKQ4g93Eo0E9h4W8asYD6Mhfltt1KhJyYMHK_By_9vjESFIeNLL8QDoBvH1YmKmNHYjIBdSrPB04dEejfAYo23RuvOWNWYs1rGSPjgw6YQoSeui9CR4y1k1FwiP2dK4u6M6FYPG-iVh6WQ3DrZDhJu8JhPSFq5UPf0pIwGy-qGF1K8SX5hVaznuvnjXNgWDdvK2lY2ZI-6qhPi2_cw4EzCB](https://github.com/user-attachments/assets/12b89025-13a3-4f3a-beea-f2ef9a28749f)
+Dart 3.5, Flutter, Provider, http, cached_network_image, flutter_dotenv, Mockito, build_runner.
 
----
+## Run it
 
-## 🚀 Features
+Copy `.env.template` to `.env` and set `BASE_URL`. Then run `flutter pub get`, `dart run build_runner build` and `flutter run`.
 
-- **Explore Characters**: Browse through a list of characters with details like name, status, species, and more.
-- **Save Favorites**: Mark characters as favorites and access them in a dedicated saved section.
-- **Search**: Search for characters by name to quickly find your favorites.
-- **Edit Characters**: Update character details dynamically.
+## Looking back (2026)
 
----
-
-## 📦 Dependencies
-
-- **Flutter SDK**
-- **Provider**: State management.
-- **Mockito**: For mocking during tests.
-- **Integration Test**: For end-to-end testing.
-- **Flutter Dotenv**: For managing environment variables.
-- **Build Runner**: For code generation.
-
----
-
-## 🛠️ Installation
-
-### 1. Clone the Repository
-```bash
-git clone https://github.com/jatezzz/rick-and-morty-app.git
-cd rick-and-morty-app
-```
-### 2. Install Dependencies
-Run the following command to install Flutter dependencies:
-
-```bash
-flutter pub get
-```
-### 3. Generate Code
-Before running the tests, generate the necessary files using build_runner:
-
-```bash
-flutter pub run build_runner build
-```
-4. Run the App
-Start the app on an emulator or a physical device:
-
-```bash
-flutter run
-```
-
-### 🧪 Testing
-Run all unit tests using:
-
-```bash
-flutter test
-```
-
-### 🛠️ Environment Variables
-The app uses environment variables for configuration. Add a .env file in the root directory with the following structure:
-```bash
-BASE_URL=https://your-api-url.com
-```
+The widget test is still the default one. Today I would add widget and integration tests for the main flows, and probably use Riverpod for state.
